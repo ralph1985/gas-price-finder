@@ -86,8 +86,8 @@
     }
   };
 
-  const persistFavorites = () => {
-    localStorage.setItem(fuelFavoritesStorageKey, JSON.stringify(favorites));
+  const persistFavorites = (items) => {
+    localStorage.setItem(fuelFavoritesStorageKey, JSON.stringify(items));
   };
 
   const triggerSearch = async () => {
@@ -120,7 +120,7 @@
   }
 
   $: if (hasHydrated) {
-    persistFavorites();
+    persistFavorites(favorites);
   }
 
   $: stations = response.result?.estaciones ?? [];
