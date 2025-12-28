@@ -300,6 +300,33 @@
               Rellena el codigo postal y elige combustible.
             </p>
           </div>
+          {#if favorites.length > 0}
+            <div class="space-y-3">
+              <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+                Favoritos
+              </p>
+              <div class="flex flex-wrap gap-2">
+                {#each favorites as favorite}
+                  <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
+                    <button
+                      class="text-xs font-semibold"
+                      type="button"
+                      on:click={() => handleSelectFavorite(favorite)}
+                    >
+                      {favorite.name} - {favorite.postalCode}
+                    </button>
+                    <button
+                      class="text-xs text-base-content/60"
+                      type="button"
+                      on:click={() => handleRemoveFavorite(favorite)}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
 
           <label class="form-control gap-2">
             <span class="text-sm font-medium">Codigo postal</span>
@@ -353,28 +380,6 @@
       </div>
 
       <div class="space-y-4">
-        {#if favorites.length > 0}
-          <div class="flex flex-wrap gap-2">
-            {#each favorites as favorite}
-              <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
-                <button
-                  class="text-xs font-semibold"
-                  type="button"
-                  on:click={() => handleSelectFavorite(favorite)}
-                >
-                  {favorite.name} - {favorite.postalCode}
-                </button>
-                <button
-                  class="text-xs text-base-content/60"
-                  type="button"
-                  on:click={() => handleRemoveFavorite(favorite)}
-                >
-                  Quitar
-                </button>
-              </div>
-            {/each}
-          </div>
-        {/if}
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
             <div class="stat-title">Minimo</div>
