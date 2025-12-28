@@ -38,6 +38,12 @@ Las consultas deben ejecutarse en el cliente para evitar consumo de CPU en Verce
 - La infraestructura implementa interfaces y puede usar `fetch`, `localStorage` o caches.
 - La UI solo llama a casos de uso; evita logica de negocio en componentes.
 
+## Styling & UI
+
+- Tailwind CSS + DaisyUI para el estilo base.
+- Configuracion en `tailwind.config.cjs` y `postcss.config.cjs`.
+- Estilos globales en `src/app.css`.
+
 ## Testing Guidelines
 
 No hay framework de pruebas configurado. Si se anade:
