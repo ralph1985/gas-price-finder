@@ -51,8 +51,8 @@
     }
   };
 
-  const persistFuelSelection = () => {
-    localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(selectedProductIds));
+  const persistFuelSelection = (selection) => {
+    localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(selection));
   };
 
   const triggerSearch = async () => {
@@ -76,7 +76,7 @@
   });
 
   $: if (hasHydrated) {
-    persistFuelSelection();
+    persistFuelSelection(selectedProductIds);
   }
 
   $: if (hasHydrated && postalCodePattern.test(postalCode)) {
