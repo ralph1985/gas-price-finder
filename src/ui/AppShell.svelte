@@ -285,7 +285,22 @@
           </div>
         </div>
 
-        {#if errorMessage}
+        {#if isLoading}
+          <div class="grid gap-3">
+            {#each Array(3) as _}
+              <article class="card border border-base-200 bg-base-100/95 shadow">
+                <div class="card-body gap-3">
+                  <div class="skeleton h-5 w-3/4"></div>
+                  <div class="skeleton h-4 w-full"></div>
+                  <div class="flex gap-3">
+                    <div class="skeleton h-4 w-24"></div>
+                    <div class="skeleton h-4 w-20"></div>
+                  </div>
+                </div>
+              </article>
+            {/each}
+          </div>
+        {:else if errorMessage}
           <div class="alert alert-error">
             <span>{errorMessage}</span>
           </div>
