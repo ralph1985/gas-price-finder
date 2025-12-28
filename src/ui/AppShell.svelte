@@ -10,6 +10,7 @@
 
   const postalCodePattern = /^\d{5}$/;
   const fuelSelectionStorageKey = "gpf:fuelSelection";
+  const lastPostalCodeStorageKey = "gpf:lastPostalCode";
   const defaultProductIds = ["4", "1"].filter((id) => fuelProductIds.includes(id));
 
   let postalCode = "";
@@ -54,13 +55,32 @@
     localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(selectedProductIds));
   };
 
+  const triggerSearch = async () => {
+    if (!postalCodePattern.test(postalCode)) {
+      return;
+    }
+    if (selectedProductIds.length === 0) {
+      return;
+    }
+    await handleSearch();
+  };
+
   onMount(() => {
+    const storedPostalCode = localStorage.getItem(lastPostalCodeStorageKey);
+    if (storedPostalCode && postalCodePattern.test(storedPostalCode)) {
+      postalCode = storedPostalCode;
+    }
     loadFuelSelection();
     hasHydrated = true;
+    void triggerSearch();
   });
 
   $: if (hasHydrated) {
     persistFuelSelection();
+  }
+
+  $: if (hasHydrated && postalCodePattern.test(postalCode)) {
+    localStorage.setItem(lastPostalCodeStorageKey, postalCode);
   }
 
   $: stations = response.result?.estaciones ?? [];
