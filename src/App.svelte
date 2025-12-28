@@ -27,7 +27,7 @@
   ];
 </script>
 
-<main data-theme="lemonade" class="min-h-screen bg-base-100">
+<main data-theme="light" class="min-h-screen bg-base-100 text-base-content">
   <div
     class="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,hsl(var(--gpf-accent)/0.25),transparent_70%)]"
   ></div>
@@ -38,9 +38,9 @@
           GPF
         </div>
         <div>
-          <p class="text-xs uppercase tracking-[0.35em] text-neutral/60">Gas Price Finder</p>
+          <p class="text-xs uppercase tracking-[0.35em] text-base-content/60">Gas Price Finder</p>
           <h1 class="text-2xl font-semibold md:text-3xl">Busca el mejor precio cerca</h1>
-          <p class="text-sm text-neutral/70">
+          <p class="text-sm text-base-content/70">
             Consulta precios actualizados y guarda tus busquedas favoritas.
           </p>
         </div>
@@ -56,7 +56,7 @@
         <div class="card-body gap-4">
           <div>
             <h2 class="text-lg font-semibold">Busqueda rapida</h2>
-            <p class="text-xs text-neutral/60">Rellena el codigo postal y elige combustible.</p>
+            <p class="text-xs text-base-content/60">Rellena el codigo postal y elige combustible.</p>
           </div>
 
           <label class="form-control gap-2">
@@ -111,7 +111,7 @@
           <button class="btn btn-primary w-full">Buscar precios</button>
 
           <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
-            <p class="text-xs uppercase tracking-[0.2em] text-neutral/60">Busquedas recientes</p>
+            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">Busquedas recientes</p>
             <div class="mt-2 flex flex-wrap gap-2">
               <span class="badge badge-outline">28001</span>
               <span class="badge badge-outline">28880</span>
@@ -147,14 +147,14 @@
                 <div class="flex items-start justify-between">
                   <div>
                     <h3 class="text-lg font-semibold">{station.name}</h3>
-                    <p class="text-sm text-neutral/60">{station.address}</p>
+                    <p class="text-sm text-base-content/60">{station.address}</p>
                   </div>
                   <span class="badge badge-primary badge-outline">{station.fuel}</span>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 text-sm">
                   <span class="badge badge-neutral">EUR {station.price}</span>
-                  <span class="text-neutral/70">{station.distance}</span>
-                  <span class="text-neutral/60">{station.updated}</span>
+                  <span class="text-base-content/70">{station.distance}</span>
+                  <span class="text-base-content/60">{station.updated}</span>
                 </div>
                 <div class="card-actions justify-between pt-2">
                   <button class="btn btn-sm btn-ghost">Ver ruta</button>
