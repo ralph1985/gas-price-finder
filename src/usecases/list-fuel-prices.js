@@ -1,29 +1,6 @@
 import { FuelPriceSearchStatus } from "../interfaces/fuel-price-repository.js";
 import { FuelPriceRepositoryImpl } from "../infrastructure/fuel-price-repository.js";
 
-const repository = new FuelPriceRepositoryImpl();
-
-export async function listFuelPricesUseCase(criteria = {}) {
-  const response = await repository.searchStations(criteria);
-  if (response.status !== FuelPriceSearchStatus.READY || !response.result) {
-    return response;
-  }
-
-  const fuelId = criteria.productId ?? null;
-  if (!fuelId) return response;
-
-  return {
-    ...response,
-    result: {
-      ...response.result,
-      estaciones: response.result.estaciones.map((station) => ({
-        ...station,
-        fuelId,
-      })),
-    },
-  };
-}
-
 function mergeBoundingBoxes(results) {
   if (results.length === 0) return null;
 
@@ -41,47 +18,76 @@ function mergeBoundingBoxes(results) {
   );
 }
 
-export async function listFuelPricesBatchUseCase(criteria, productIds) {
-  const normalizedProductIds = productIds.filter((value) => value.trim().length > 0);
-  if (normalizedProductIds.length === 0) {
-    return { result: null, status: FuelPriceSearchStatus.ERROR };
-  }
+export function createFuelPriceUsecases(repository) {
+  const listFuelPricesUseCase = async (criteria = {}) => {
+    const response = await repository.searchStations(criteria);
+    if (response.status !== FuelPriceSearchStatus.READY || !response.result) {
+      return response;
+    }
 
-  const responses = await Promise.all(
-    normalizedProductIds.map(async (productId) => ({
-      productId,
-      response: await repository.searchStations({ ...criteria, productId }),
-    }))
-  );
-
-  const successful = responses.filter(
-    ({ response }) => response.status === FuelPriceSearchStatus.READY && response.result
-  );
-  if (successful.length === 0) {
-    return { result: null, status: FuelPriceSearchStatus.ERROR };
-  }
-
-  const results = successful.map(({ response, productId }) => {
-    const result = response.result;
-    const fuelId = productId ?? null;
+    const fuelId = criteria.productId ?? null;
+    if (!fuelId) return response;
 
     return {
-      ...result,
-      estaciones: result.estaciones.map((station) => ({
-        ...station,
-        fuelId,
-      })),
+      ...response,
+      result: {
+        ...response.result,
+        estaciones: response.result.estaciones.map((station) => ({
+          ...station,
+          fuelId,
+        })),
+      },
     };
-  });
-
-  const mergedStations = results.flatMap((result) => result.estaciones);
-  const mergedBBox = mergeBoundingBoxes(results);
-
-  return {
-    status: FuelPriceSearchStatus.READY,
-    result: {
-      bbox: mergedBBox ?? results[0].bbox,
-      estaciones: mergedStations,
-    },
   };
+
+  const listFuelPricesBatchUseCase = async (criteria, productIds) => {
+    const normalizedProductIds = productIds.filter((value) => value.trim().length > 0);
+    if (normalizedProductIds.length === 0) {
+      return { result: null, status: FuelPriceSearchStatus.ERROR };
+    }
+
+    const responses = await Promise.all(
+      normalizedProductIds.map(async (productId) => ({
+        productId,
+        response: await repository.searchStations({ ...criteria, productId }),
+      }))
+    );
+
+    const successful = responses.filter(
+      ({ response }) => response.status === FuelPriceSearchStatus.READY && response.result
+    );
+    if (successful.length === 0) {
+      return { result: null, status: FuelPriceSearchStatus.ERROR };
+    }
+
+    const results = successful.map(({ response, productId }) => {
+      const result = response.result;
+      const fuelId = productId ?? null;
+
+      return {
+        ...result,
+        estaciones: result.estaciones.map((station) => ({
+          ...station,
+          fuelId,
+        })),
+      };
+    });
+
+    const mergedStations = results.flatMap((result) => result.estaciones);
+    const mergedBBox = mergeBoundingBoxes(results);
+
+    return {
+      status: FuelPriceSearchStatus.READY,
+      result: {
+        bbox: mergedBBox ?? results[0].bbox,
+        estaciones: mergedStations,
+      },
+    };
+  };
+
+  return { listFuelPricesUseCase, listFuelPricesBatchUseCase };
 }
+
+const repository = new FuelPriceRepositoryImpl();
+export const { listFuelPricesUseCase, listFuelPricesBatchUseCase } =
+  createFuelPriceUsecases(repository);

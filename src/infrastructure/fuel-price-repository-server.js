@@ -1,8 +1,14 @@
 import { FuelPriceSearchStatus } from "../interfaces/fuel-price-repository.js";
-import { getCacheExpirationMs, getFuelPricesCacheBucket } from "./fuel-price-cache.js";
+import {
+  getCacheExpirationMs,
+  getFuelPricesCacheBucket,
+} from "./fuel-price-cache.js";
 
-const fuelPriceApiUrl = "/api/fuel-prices";
+const fuelPriceApiUrl =
+  "https://geoportalgasolineras.es/geoportal/rest/busquedaEstaciones";
 const fuelPricesCachePrefix = "gpf:fuel-prices";
+
+const cache = new Map();
 
 function buildSearchPayload(criteria) {
   const bounds = criteria.bounds ?? {};
@@ -46,66 +52,53 @@ function getCacheKey(payload) {
   return `${fuelPricesCachePrefix}:${bucket}:${payloadKey}`;
 }
 
-function readCachedResult(payload) {
-  if (typeof localStorage === "undefined") return null;
+function readCache(payload) {
   const cacheKey = getCacheKey(payload);
-  const cachedRaw = localStorage.getItem(cacheKey);
-  if (!cachedRaw) return null;
-
-  try {
-    const cached = JSON.parse(cachedRaw);
-    if (!cached || typeof cached !== "object") return null;
-    const expiresAt = Number(cached.expiresAt ?? 0);
-    if (Number.isNaN(expiresAt) || Date.now() > expiresAt) return null;
-    return cached.result ?? null;
-  } catch {
+  const cached = cache.get(cacheKey);
+  if (!cached) return null;
+  if (Date.now() > cached.expiresAt) {
+    cache.delete(cacheKey);
     return null;
   }
+  return cached.result;
 }
 
-function writeCachedResult(payload, result) {
-  if (typeof localStorage === "undefined") return;
+function writeCache(payload, result) {
   const cacheKey = getCacheKey(payload);
-  const expiresAt = Date.now() + getCacheExpirationMs();
-  const payloadValue = JSON.stringify({ expiresAt, result });
-  localStorage.setItem(cacheKey, payloadValue);
+  cache.set(cacheKey, {
+    expiresAt: Date.now() + getCacheExpirationMs(),
+    result,
+  });
 }
 
 async function fetchFuelPrices(payload) {
   const response = await fetch(fuelPriceApiUrl, {
     method: "POST",
     headers: {
+      Accept: "application/json, text/plain, */*",
       "Content-Type": "application/json; charset=UTF-8",
     },
-    body: JSON.stringify({
-      postalCode: payload.codPostal,
-      productId: payload.idProducto,
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     throw new Error(`Fuel prices request failed with status ${response.status}`);
   }
 
-  const data = await response.json();
-  return data?.result ?? null;
+  return response.json();
 }
 
-export class FuelPriceRepositoryImpl {
+export class FuelPriceRepositoryServer {
   async searchStations(criteria) {
     try {
       const payload = buildSearchPayload(criteria);
-      const cached = readCachedResult(payload);
+      const cached = readCache(payload);
       if (cached) {
         return { result: cached, status: FuelPriceSearchStatus.READY };
       }
 
       const result = await fetchFuelPrices(payload);
-      if (!result) {
-        return { result: null, status: FuelPriceSearchStatus.ERROR };
-      }
-      writeCachedResult(payload, result);
-
+      writeCache(payload, result);
       return { result, status: FuelPriceSearchStatus.READY };
     } catch {
       return { result: null, status: FuelPriceSearchStatus.ERROR };
