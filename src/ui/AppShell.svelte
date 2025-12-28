@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import {
     fuelBadgeClassById,
     fuelLabelById,
@@ -11,6 +11,7 @@
   const postalCodePattern = /^\d{5}$/;
   const fuelSelectionStorageKey = "gpf:fuelSelection";
   const lastPostalCodeStorageKey = "gpf:lastPostalCode";
+  const fuelFavoritesStorageKey = "gpf:fuelFavorites";
   const defaultProductIds = ["4", "1"].filter((id) => fuelProductIds.includes(id));
 
   let postalCode = "";
@@ -19,6 +20,10 @@
   let isLoading = false;
   let errorMessage = null;
   let hasHydrated = false;
+  let favorites = [];
+  let isFavoriteModalOpen = false;
+  let favoriteName = "";
+  let favoriteError = null;
 
   const normalizePostalCode = (value) => value.replace(/\D/g, "").slice(0, 5);
 
@@ -55,6 +60,29 @@
     localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(selection));
   };
 
+  const loadFavorites = () => {
+    const stored = localStorage.getItem(fuelFavoritesStorageKey);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return;
+      favorites = parsed.filter(
+        (value) =>
+          value &&
+          typeof value === "object" &&
+          typeof value.id === "string" &&
+          typeof value.name === "string" &&
+          typeof value.postalCode === "string"
+      );
+    } catch {
+      return;
+    }
+  };
+
+  const persistFavorites = () => {
+    localStorage.setItem(fuelFavoritesStorageKey, JSON.stringify(favorites));
+  };
+
   const triggerSearch = async () => {
     if (!postalCodePattern.test(postalCode)) {
       return;
@@ -71,6 +99,7 @@
       postalCode = storedPostalCode;
     }
     loadFuelSelection();
+    loadFavorites();
     hasHydrated = true;
     void triggerSearch();
   });
@@ -81,6 +110,10 @@
 
   $: if (hasHydrated && postalCodePattern.test(postalCode)) {
     localStorage.setItem(lastPostalCodeStorageKey, postalCode);
+  }
+
+  $: if (hasHydrated) {
+    persistFavorites();
   }
 
   $: stations = response.result?.estaciones ?? [];
@@ -147,6 +180,48 @@
     errorMessage = null;
   };
 
+  const handleOpenFavoriteModal = () => {
+    favoriteError = null;
+    favoriteName = "";
+    isFavoriteModalOpen = true;
+  };
+
+  const handleSaveFavorite = () => {
+    const trimmedName = favoriteName.trim();
+    const trimmedPostalCode = postalCode.trim();
+
+    if (!trimmedName) {
+      favoriteError = "Pon un nombre para el favorito.";
+      return;
+    }
+    if (!postalCodePattern.test(trimmedPostalCode)) {
+      favoriteError = "Codigo postal invalido.";
+      return;
+    }
+
+    favorites = [
+      ...favorites,
+      {
+        id: `${trimmedPostalCode}-${Date.now()}`,
+        name: trimmedName,
+        postalCode: trimmedPostalCode,
+      },
+    ];
+    favoriteName = "";
+    favoriteError = null;
+    isFavoriteModalOpen = false;
+  };
+
+  const handleSelectFavorite = async (favorite) => {
+    postalCode = favorite.postalCode;
+    await tick();
+    await triggerSearch();
+  };
+
+  const handleRemoveFavorite = (favorite) => {
+    favorites = favorites.filter((item) => item.id !== favorite.id);
+  };
+
   const handleSearch = async () => {
     const trimmedPostalCode = postalCode.trim();
 
@@ -199,6 +274,9 @@
         <div class="text-sm text-base-content/60">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
+        <button class="btn btn-sm btn-outline" type="button" on:click={handleOpenFavoriteModal}>
+          Guardar
+        </button>
         <button class="btn btn-ghost btn-sm" type="button" on:click={handleClear}>
           Limpiar
         </button>
@@ -264,6 +342,28 @@
       </div>
 
       <div class="space-y-4">
+        {#if favorites.length > 0}
+          <div class="flex flex-wrap gap-2">
+            {#each favorites as favorite}
+              <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
+                <button
+                  class="text-xs font-semibold"
+                  type="button"
+                  on:click={() => handleSelectFavorite(favorite)}
+                >
+                  {favorite.name} - {favorite.postalCode}
+                </button>
+                <button
+                  class="text-xs text-base-content/60"
+                  type="button"
+                  on:click={() => handleRemoveFavorite(favorite)}
+                >
+                  Quitar
+                </button>
+              </div>
+            {/each}
+          </div>
+        {/if}
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
             <div class="stat-title">Minimo</div>
@@ -364,4 +464,51 @@
       </div>
     </section>
   </div>
+
+  {#if isFavoriteModalOpen}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div class="card w-full max-w-md border border-base-200 bg-base-100 shadow-xl">
+        <div class="card-body gap-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-lg font-semibold">Guardar favorito</div>
+              <p class="text-sm text-base-content/60">
+                Pon un nombre para este codigo postal.
+              </p>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" on:click={() => (isFavoriteModalOpen = false)}>
+              Cerrar
+            </button>
+          </div>
+
+          <label class="form-control gap-2">
+            <span class="text-sm font-medium">Nombre</span>
+            <input
+              type="text"
+              class="input input-bordered w-full"
+              value={favoriteName}
+              on:input={(event) => {
+                favoriteName = event.target.value;
+              }}
+            />
+          </label>
+
+          {#if favoriteError}
+            <div class="alert alert-error">
+              <span>{favoriteError}</span>
+            </div>
+          {/if}
+
+          <div class="flex justify-end gap-2">
+            <button class="btn btn-ghost btn-sm" type="button" on:click={() => (isFavoriteModalOpen = false)}>
+              Cancelar
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" on:click={handleSaveFavorite}>
+              Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 </main>
