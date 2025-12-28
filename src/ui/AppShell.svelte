@@ -264,7 +264,7 @@
       </div>
 
       <div class="space-y-4">
-        <div class="stats stats-vertical border border-base-200 bg-base-100 shadow md:stats-horizontal">
+        <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
             <div class="stat-title">Minimo</div>
             <div class="stat-value text-primary">
