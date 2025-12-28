@@ -66,14 +66,21 @@
     try {
       const parsed = JSON.parse(stored);
       if (!Array.isArray(parsed)) return;
-      favorites = parsed.filter(
-        (value) =>
-          value &&
-          typeof value === "object" &&
-          typeof value.id === "string" &&
-          typeof value.name === "string" &&
-          typeof value.postalCode === "string"
-      );
+      favorites = parsed
+        .filter(
+          (value) =>
+            value &&
+            typeof value === "object" &&
+            typeof value.id === "string" &&
+            typeof value.name === "string" &&
+            typeof value.postalCode === "string"
+        )
+        .map((value) => {
+          const productIds = Array.isArray(value.productIds)
+            ? value.productIds.filter((id) => fuelProductIds.includes(id))
+            : [];
+          return { ...value, productIds };
+        });
     } catch {
       return;
     }
@@ -205,6 +212,7 @@
         id: `${trimmedPostalCode}-${Date.now()}`,
         name: trimmedName,
         postalCode: trimmedPostalCode,
+        productIds: [...selectedProductIds],
       },
     ];
     favoriteName = "";
@@ -214,6 +222,9 @@
 
   const handleSelectFavorite = async (favorite) => {
     postalCode = favorite.postalCode;
+    if (Array.isArray(favorite.productIds) && favorite.productIds.length > 0) {
+      selectedProductIds = favorite.productIds.filter((id) => fuelProductIds.includes(id));
+    }
     await tick();
     await triggerSearch();
   };
@@ -274,9 +285,6 @@
         <div class="text-sm text-base-content/60">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
-        <button class="btn btn-sm btn-outline" type="button" on:click={handleOpenFavoriteModal}>
-          Guardar
-        </button>
         <button class="btn btn-ghost btn-sm" type="button" on:click={handleClear}>
           Limpiar
         </button>
@@ -330,6 +338,9 @@
             on:click={handleSearch}
           >
             Buscar precios
+          </button>
+          <button class="btn btn-outline w-full" type="button" on:click={handleOpenFavoriteModal}>
+            Guardar
           </button>
 
           <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
@@ -473,7 +484,7 @@
             <div>
               <div class="text-lg font-semibold">Guardar favorito</div>
               <p class="text-sm text-base-content/60">
-                Pon un nombre para este codigo postal.
+                Guarda el codigo postal y la seleccion actual de combustibles.
               </p>
             </div>
             <button class="btn btn-ghost btn-sm" type="button" on:click={() => (isFavoriteModalOpen = false)}>
