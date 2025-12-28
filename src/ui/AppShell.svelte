@@ -341,6 +341,12 @@
               }}
             />
           </label>
+          <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
+            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">Ayuda</p>
+            <p class="mt-2 text-xs text-base-content/60">
+              El codigo postal debe tener 5 digitos.
+            </p>
+          </div>
 
           <div class="space-y-2">
             <p class="text-sm font-medium">Combustibles</p>
@@ -370,12 +376,6 @@
             Guardar
           </button>
 
-          <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
-            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">Ayuda</p>
-            <p class="mt-2 text-xs text-base-content/60">
-              El codigo postal debe tener 5 digitos.
-            </p>
-          </div>
         </div>
       </div>
 
