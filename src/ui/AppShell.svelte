@@ -189,6 +189,7 @@
         <div class="text-sm text-base-content/60">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
+        <p class="text-xs text-base-content/50">Ordenados por el más barato.</p>
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
             <div class="stat-title">Minimo</div>
