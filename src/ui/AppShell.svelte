@@ -14,6 +14,7 @@
   import CookieConsent from "./components/CookieConsent.svelte";
 
   let isSearchCollapsed = false;
+  let wasLoading = false;
 
   onMount(() => {
     fuelSearch.init();
@@ -28,6 +29,12 @@
   $: selectedFuelLabel = $fuelSearch.selectedProductId
     ? fuelLabelById[$fuelSearch.selectedProductId] ?? "Combustible"
     : "Sin combustible";
+  $: {
+    if (wasLoading && !$fuelSearch.isLoading) {
+      isSearchCollapsed = true;
+    }
+    wasLoading = $fuelSearch.isLoading;
+  }
 </script>
 
 <main data-theme="light" class="min-h-screen bg-base-100 text-base-content">
