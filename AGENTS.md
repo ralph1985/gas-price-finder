@@ -54,6 +54,7 @@ No hay framework de pruebas configurado. Si se anade:
 ## Commit & Pull Request Guidelines
 
 Usa Conventional Commits (`feat:`, `fix:`, `chore:`). En PRs: resumen claro y pasos de prueba.
+Si el usuario pide varias cosas diferentes, separa los cambios en commits distintos.
 
 ## Security & Configuration Tips
 
