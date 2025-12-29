@@ -1,271 +1,27 @@
 <script>
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
+
   import {
     fuelBadgeClassById,
     fuelLabelById,
     fuelProductCatalog,
-    fuelProductIds,
   } from "../infrastructure/fuel-catalog.js";
-  import { listFuelPricesBatchUseCase } from "../usecases/list-fuel-prices.js";
-
-  const postalCodePattern = /^\d{5}$/;
-  const fuelSelectionStorageKey = "gpf:fuelSelection";
-  const lastPostalCodeStorageKey = "gpf:lastPostalCode";
-  const fuelFavoritesStorageKey = "gpf:fuelFavorites";
-  const defaultProductId = fuelProductIds.includes("4") ? "4" : fuelProductIds[0];
-
-  let postalCode = "";
-  let selectedProductId = defaultProductId;
-  let response = { status: "ready", result: null };
-  let isLoading = false;
-  let errorMessage = null;
-  let hasHydrated = false;
-  let favorites = [];
-  let isFavoriteModalOpen = false;
-  let favoriteName = "";
-  let favoriteError = null;
-
-  const normalizePostalCode = (value) => value.replace(/\D/g, "").slice(0, 5);
-
-  const formatPrice = (value) => {
-    if (value == null) return null;
-    return `${value.toFixed(3)} EUR`;
-  };
-
-  const formatUpdateLabel = (dateValue, timeValue) => {
-    const parts = [dateValue, timeValue].filter(Boolean);
-    if (parts.length === 0) return null;
-    return `Actualizado: ${parts.join(" ")}`;
-  };
-
-  const buildMapsSearchUrl = (query) =>
-    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-
-  const loadFuelSelection = () => {
-    const stored = localStorage.getItem(fuelSelectionStorageKey);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored);
-      if (typeof parsed === "string" && fuelProductIds.includes(parsed)) {
-        selectedProductId = parsed;
-        return;
-      }
-      if (Array.isArray(parsed)) {
-        const sanitized = parsed.filter((value) => fuelProductIds.includes(value));
-        if (sanitized.length > 0) {
-          selectedProductId = sanitized[0];
-        }
-      }
-    } catch {
-      return;
-    }
-  };
-
-  const persistFuelSelection = (selection) => {
-    localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(selection));
-  };
-
-  const loadFavorites = () => {
-    const stored = localStorage.getItem(fuelFavoritesStorageKey);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) return;
-      favorites = parsed
-        .filter(
-          (value) =>
-            value &&
-            typeof value === "object" &&
-            typeof value.id === "string" &&
-            typeof value.name === "string" &&
-            typeof value.postalCode === "string"
-        )
-        .map((value) => {
-          const productIds = Array.isArray(value.productIds)
-            ? value.productIds.filter((id) => fuelProductIds.includes(id))
-            : [];
-          const productId =
-            typeof value.productId === "string" && fuelProductIds.includes(value.productId)
-              ? value.productId
-              : productIds[0] ?? defaultProductId;
-          return { ...value, productId };
-        });
-    } catch {
-      return;
-    }
-  };
-
-  const persistFavorites = (items) => {
-    localStorage.setItem(fuelFavoritesStorageKey, JSON.stringify(items));
-  };
-
-  const triggerSearch = async () => {
-    if (!postalCodePattern.test(postalCode)) {
-      return;
-    }
-    if (!selectedProductId) {
-      return;
-    }
-    await handleSearch();
-  };
+  import { fuelSearch } from "./stores/fuel-search-store.js";
+  import {
+    buildFormattedStations,
+    calculatePriceStats,
+  } from "./utils/fuel-format.js";
 
   onMount(() => {
-    const storedPostalCode = localStorage.getItem(lastPostalCodeStorageKey);
-    if (storedPostalCode && postalCodePattern.test(storedPostalCode)) {
-      postalCode = storedPostalCode;
-    }
-    loadFuelSelection();
-    loadFavorites();
-    hasHydrated = true;
-    void triggerSearch();
+    fuelSearch.init();
   });
 
-  $: if (hasHydrated) {
-    persistFuelSelection(selectedProductId);
-  }
-
-  $: if (hasHydrated && postalCodePattern.test(postalCode)) {
-    localStorage.setItem(lastPostalCodeStorageKey, postalCode);
-  }
-
-  $: if (hasHydrated) {
-    persistFavorites(favorites);
-  }
-
-  $: stations = response.result?.estaciones ?? [];
-
-  $: formattedStations = [...stations]
-    .sort((a, b) => {
-      const priceA = a.precio ?? Number.POSITIVE_INFINITY;
-      const priceB = b.precio ?? Number.POSITIVE_INFINITY;
-      return priceA - priceB;
-    })
-    .map((station, index) => {
-      const info = station.estacion ?? {};
-      const title = info.rotulo ?? "Estacion sin nombre";
-      const addressParts = [info.direccion, info.municipio, info.provincia].filter(Boolean);
-      const address = addressParts.join(" - ") || "Direccion no disponible";
-      const mapQuery = addressParts.join(", ");
-      const update = formatUpdateLabel(info.fechaPvp, info.horaPvp);
-      const price = formatPrice(station.precio) ?? "Sin precio";
-      const fuelLabel = station.fuelId ? fuelLabelById.get(station.fuelId) : null;
-      const fuelBadgeClass = station.fuelId ? fuelBadgeClassById[station.fuelId] : null;
-
-      return {
-        key: `${info.id ?? title}-${station.fuelId ?? "unknown"}-${index}`,
-        title,
-        address,
-        mapUrl: mapQuery ? buildMapsSearchUrl(mapQuery) : null,
-        update,
-        price,
-        schedule: info.horario,
-        fuelLabel,
-        fuelBadgeClass,
-      };
-    });
-
-  const calculatePriceStats = (items) => {
-    const values = items
-      .map((station) => station.precio)
-      .filter((value) => typeof value === "number");
-    if (values.length === 0) {
-      return { min: null, avg: null, max: null };
-    }
-
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
-
-    return { min, avg, max };
-  };
-
+  $: stations = $fuelSearch.response?.result?.estaciones ?? [];
+  $: formattedStations = buildFormattedStations(stations, {
+    fuelLabelById,
+    fuelBadgeClassById,
+  });
   $: priceStats = calculatePriceStats(stations);
-
-  const toggleFuelSelection = (id) => {
-    selectedProductId = id;
-  };
-
-  const handleClear = () => {
-    postalCode = "";
-    selectedProductId = defaultProductId;
-    response = { status: "ready", result: null };
-    errorMessage = null;
-  };
-
-  const handleOpenFavoriteModal = () => {
-    favoriteError = null;
-    favoriteName = "";
-    isFavoriteModalOpen = true;
-  };
-
-  const handleSaveFavorite = () => {
-    const trimmedName = favoriteName.trim();
-    const trimmedPostalCode = postalCode.trim();
-
-    if (!trimmedName) {
-      favoriteError = "Pon un nombre para el favorito.";
-      return;
-    }
-    if (!postalCodePattern.test(trimmedPostalCode)) {
-      favoriteError = "Codigo postal invalido.";
-      return;
-    }
-
-    favorites = [
-      ...favorites,
-      {
-        id: `${trimmedPostalCode}-${Date.now()}`,
-        name: trimmedName,
-        postalCode: trimmedPostalCode,
-        productId: selectedProductId,
-      },
-    ];
-    favoriteName = "";
-    favoriteError = null;
-    isFavoriteModalOpen = false;
-  };
-
-  const handleSelectFavorite = async (favorite) => {
-    postalCode = favorite.postalCode;
-    if (typeof favorite.productId === "string" && fuelProductIds.includes(favorite.productId)) {
-      selectedProductId = favorite.productId;
-    }
-    await tick();
-    await triggerSearch();
-  };
-
-  const handleRemoveFavorite = (favorite) => {
-    favorites = favorites.filter((item) => item.id !== favorite.id);
-  };
-
-  const handleSearch = async () => {
-    const trimmedPostalCode = postalCode.trim();
-
-    if (!postalCodePattern.test(trimmedPostalCode)) {
-      errorMessage = "Codigo postal invalido.";
-      response = { status: "ready", result: null };
-      return;
-    }
-    if (!selectedProductId) {
-      errorMessage = "Selecciona al menos un combustible.";
-      response = { status: "ready", result: null };
-      return;
-    }
-
-    isLoading = true;
-    errorMessage = null;
-
-    const nextResponse = await listFuelPricesBatchUseCase(
-      { postalCode: trimmedPostalCode },
-      [selectedProductId]
-    );
-
-    response = nextResponse;
-    if (nextResponse.status !== "ready") {
-      errorMessage = "No se han podido cargar los precios ahora mismo.";
-    }
-    isLoading = false;
-  };
 </script>
 
 <main data-theme="light" class="min-h-screen bg-base-100 text-base-content">
@@ -290,7 +46,7 @@
         <div class="text-sm text-base-content/60">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
-        <button class="btn btn-ghost btn-sm" type="button" on:click={handleClear}>
+        <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.clear}>
           Limpiar
         </button>
       </div>
@@ -305,25 +61,25 @@
               Rellena el codigo postal y elige combustible.
             </p>
           </div>
-          {#if favorites.length > 0}
+          {#if $fuelSearch.favorites.length > 0}
             <div class="space-y-3">
               <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
                 Favoritos
               </p>
               <div class="flex flex-wrap gap-2">
-                {#each favorites as favorite}
+                {#each $fuelSearch.favorites as favorite}
                   <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
                     <button
                       class="text-xs font-semibold"
                       type="button"
-                      on:click={() => handleSelectFavorite(favorite)}
+                      on:click={() => fuelSearch.selectFavorite(favorite)}
                     >
                       {favorite.name} - {favorite.postalCode}
                     </button>
                     <button
                       class="text-xs text-base-content/60"
                       type="button"
-                      on:click={() => handleRemoveFavorite(favorite)}
+                      on:click={() => fuelSearch.removeFavorite(favorite)}
                     >
                       Quitar
                     </button>
@@ -340,9 +96,9 @@
               placeholder="28001"
               inputmode="numeric"
               class="input input-bordered w-full"
-              value={postalCode}
+              value={$fuelSearch.postalCode}
               on:input={(event) => {
-                postalCode = normalizePostalCode(event.target.value);
+                fuelSearch.setPostalCode(event.target.value);
               }}
             />
           </label>
@@ -361,8 +117,8 @@
                   type="radio"
                   name="fuel-product"
                   class="radio radio-sm"
-                  checked={selectedProductId === option.id}
-                  on:change={() => toggleFuelSelection(option.id)}
+                  checked={$fuelSearch.selectedProductId === option.id}
+                  on:change={() => fuelSearch.setSelectedProductId(option.id)}
                 />
                 <span>{option.label}</span>
               </label>
@@ -372,13 +128,13 @@
           <button
             class="btn btn-primary w-full"
             type="button"
-            class:loading={isLoading}
-            disabled={isLoading}
-            on:click={handleSearch}
+            class:loading={$fuelSearch.isLoading}
+            disabled={$fuelSearch.isLoading}
+            on:click={fuelSearch.search}
           >
             Buscar precios
           </button>
-          <button class="btn btn-outline w-full" type="button" on:click={handleOpenFavoriteModal}>
+          <button class="btn btn-outline w-full" type="button" on:click={fuelSearch.openFavoriteModal}>
             Guardar
           </button>
 
@@ -407,7 +163,7 @@
           </div>
         </div>
 
-        {#if isLoading}
+        {#if $fuelSearch.isLoading}
           <div class="grid gap-3">
             {#each Array(3) as _}
               <article class="card border border-base-200 bg-base-100/95 shadow">
@@ -422,11 +178,11 @@
               </article>
             {/each}
           </div>
-        {:else if errorMessage}
+        {:else if $fuelSearch.errorMessage}
           <div class="alert alert-error">
-            <span>{errorMessage}</span>
+            <span>{$fuelSearch.errorMessage}</span>
           </div>
-        {:else if response.status === "ready" && formattedStations.length === 0}
+        {:else if $fuelSearch.response.status === "ready" && formattedStations.length === 0}
           <div class="alert alert-info">
             <span>No hay resultados todavia.</span>
           </div>
@@ -487,7 +243,7 @@
     </section>
   </div>
 
-  {#if isFavoriteModalOpen}
+  {#if $fuelSearch.isFavoriteModalOpen}
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
       <div class="card w-full max-w-md border border-base-200 bg-base-100 shadow-xl">
         <div class="card-body gap-4">
@@ -498,7 +254,7 @@
                 Guarda el codigo postal y la seleccion actual de combustibles.
               </p>
             </div>
-            <button class="btn btn-ghost btn-sm" type="button" on:click={() => (isFavoriteModalOpen = false)}>
+            <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.closeFavoriteModal}>
               Cerrar
             </button>
           </div>
@@ -508,24 +264,24 @@
             <input
               type="text"
               class="input input-bordered w-full"
-              value={favoriteName}
+              value={$fuelSearch.favoriteName}
               on:input={(event) => {
-                favoriteName = event.target.value;
+                fuelSearch.setFavoriteName(event.target.value);
               }}
             />
           </label>
 
-          {#if favoriteError}
+          {#if $fuelSearch.favoriteError}
             <div class="alert alert-error">
-              <span>{favoriteError}</span>
+              <span>{$fuelSearch.favoriteError}</span>
             </div>
           {/if}
 
           <div class="flex justify-end gap-2">
-            <button class="btn btn-ghost btn-sm" type="button" on:click={() => (isFavoriteModalOpen = false)}>
+            <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.closeFavoriteModal}>
               Cancelar
             </button>
-            <button class="btn btn-primary btn-sm" type="button" on:click={handleSaveFavorite}>
+            <button class="btn btn-primary btn-sm" type="button" on:click={fuelSearch.saveFavorite}>
               Guardar
             </button>
           </div>
