@@ -89,13 +89,28 @@ async function fetchFuelPrices(payload) {
     const text = await response.text().catch(() => "");
     console.error("[fuel-prices]", "upstream error", {
       status: response.status,
+      contentType: response.headers.get("content-type"),
       body: text.slice(0, 500),
     });
     throw new Error(`Fuel prices request failed with status ${response.status}`);
   }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = await response.json();
+  } catch (error) {
+    const text = await response.text().catch(() => "");
+    console.error("[fuel-prices]", "upstream json error", {
+      error: error?.message ?? String(error),
+      contentType: response.headers.get("content-type"),
+      body: text.slice(0, 500),
+    });
+    throw error;
+  }
+
   console.log("[fuel-prices]", "upstream ok", {
+    status: response.status,
+    contentType: response.headers.get("content-type"),
     stations: data?.estaciones?.length ?? 0,
   });
   return data;
@@ -113,7 +128,10 @@ export class FuelPriceRepositoryServer {
       const result = await fetchFuelPrices(payload);
       writeCache(payload, result);
       return { result, status: FuelPriceSearchStatus.READY };
-    } catch {
+    } catch (error) {
+      console.error("[fuel-prices]", "search error", {
+        error: error?.message ?? String(error),
+      });
       return { result: null, status: FuelPriceSearchStatus.ERROR };
     }
   }
