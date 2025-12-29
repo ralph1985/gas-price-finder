@@ -1,43 +1,63 @@
-# Svelte + Vite
+# Gas Price Finder
 
-This template should help get you started developing with Svelte in Vite.
+Buscador de precios de combustibles con Svelte + Vite. Cliente ligero, API propia en Vercel y cache diaria (reset a las 08:00).
 
-## Recommended IDE Setup
+## Stack
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- Svelte + Vite (SPA)
+- Tailwind CSS + DaisyUI
+- API serverless en Vercel (`/api/fuel-prices`)
+- Arquitectura Limpia en `src/`
 
-## Need an official Svelte framework?
+## Estructura
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+- `src/domain/` entidades y reglas de negocio
+- `src/usecases/` casos de uso
+- `src/interfaces/` contratos
+- `src/infrastructure/` detalles (HTTP, cache, storage)
+- `src/ui/` componentes, stores y utilidades
+- `api/` endpoints Vercel
+- `public/` assets estaticos e iconos
 
-## Technical considerations
+## Comandos
 
-**Why use this over SvelteKit?**
+- `npm run dev` - Vite dev server
+- `npm run dev:api` - servidor local para `/api`
+- `npm run build` - build de produccion
+- `npm run preview` - preview del build
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+## Desarrollo local
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+En local la API no la sirve Vite. Arranca ambos:
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+1. `npm run dev:api`
+2. `npm run dev`
 
-**Why include `.vscode/extensions.json`?**
+## Produccion (Vercel)
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+La API vive en `api/fuel-prices.js` y se despliega como Serverless Function. La UI llama a `/api/fuel-prices`.
 
-**Why enable `checkJs` in the JS template?**
+## Cache
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+- Cliente: `localStorage` con expiracion diaria a las 08:00.
+- Servidor: cache en memoria por funcion y `s-maxage` hasta el siguiente reset.
 
-**Why is HMR not preserving my local component state?**
+## TLS upstream
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+El upstream usa cadena FNMT. Para evitar errores TLS en Node, se incluye:
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+- `src/infrastructure/ca/fnmt-chain.pem`
+- `undici` con `Agent` y `ca` personalizado
 
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+## Instalacion como app
+
+Se soporta instalacion en Chrome y Safari:
+
+- `public/site.webmanifest`
+- `public/sw.js`
+- metas en `index.html`
+
+## Notas
+
+- No hay variables de entorno necesarias.
+- Si cambias el API upstream, revisa CORS/TLS.
