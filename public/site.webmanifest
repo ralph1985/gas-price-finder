@@ -1,6 +1,9 @@
 {
   "name": "Gas Price Finder",
   "short_name": "GasPrice",
+  "description": "Buscador de precios de combustibles",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

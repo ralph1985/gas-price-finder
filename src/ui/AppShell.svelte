@@ -31,8 +31,8 @@
   <div class="mx-auto max-w-5xl px-4 py-6 md:py-10">
     <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-3">
-        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-neutral text-neutral-content">
-          GPF
+        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-base-200">
+          <img src="/logo.png" alt="Gas Price Finder" class="h-8 w-8" />
         </div>
         <div>
           <p class="text-xs uppercase tracking-[0.35em] text-base-content/60">Gas Price Finder</p>
