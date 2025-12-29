@@ -17,5 +17,8 @@
     "svelte": "5.43.8",
     "tailwindcss": "3.4.17",
     "vite": "7.2.4"
+  },
+  "dependencies": {
+    "undici": "6.21.0"
   }
 }
