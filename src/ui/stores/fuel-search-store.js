@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 
-import { fuelProductIds } from "../../infrastructure/fuel-catalog.js";
+import { fuelLabelById, fuelProductIds } from "../../infrastructure/fuel-catalog.js";
 import { listFuelPricesBatchUseCase } from "../../usecases/list-fuel-prices.js";
 import {
   normalizePostalCode,
@@ -36,6 +36,7 @@ const trackSearchEvent = ({ postalCode, productId, resultCount }) => {
   window.gtag("event", "search_postal_code", {
     postal_prefix: getPostalPrefix(postalCode),
     fuel_id: productId,
+    fuel_label: fuelLabelById.get(productId) ?? null,
     results_count: resultCount,
   });
 };
