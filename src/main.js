@@ -2,6 +2,32 @@ import { mount } from 'svelte'
 import './app.css'
 import App from './App.svelte'
 
+const GOOGLE_ANALYTICS_ID = import.meta.env.VITE_GOOGLE_ANALYTICS_ID
+
+const loadAnalytics = () => {
+  if (!GOOGLE_ANALYTICS_ID || typeof window === 'undefined') return
+
+  if (!document.getElementById('ga-gtag-script')) {
+    const script = document.createElement('script')
+    script.id = 'ga-gtag-script'
+    script.async = true
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`
+    document.head.appendChild(script)
+  }
+
+  window.dataLayer = window.dataLayer || []
+  function gtag() {
+    window.dataLayer.push(arguments)
+  }
+  window.gtag = window.gtag || gtag
+
+  window.gtag('js', new Date())
+  window.gtag('config', GOOGLE_ANALYTICS_ID, {
+    anonymize_ip: true,
+    send_page_view: true,
+  })
+}
+
 const app = mount(App, {
   target: document.getElementById('app'),
 })
@@ -11,5 +37,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
   })
 }
+
+loadAnalytics()
 
 export default app
