@@ -55,11 +55,6 @@
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.clear}>
-          Limpiar
-        </button>
-      </div>
     </header>
 
     <section class="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -166,6 +161,9 @@
               {/each}
             </div>
 
+            <button class="btn btn-ghost w-full" type="button" on:click={fuelSearch.clear}>
+              Limpiar
+            </button>
             <button
               class="btn btn-primary w-full"
               type="button"
