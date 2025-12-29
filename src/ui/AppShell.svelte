@@ -56,9 +56,6 @@
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <div class="text-sm text-base-content/60">
-          Resultados: <span class="font-semibold">{stations.length}</span>
-        </div>
         <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.clear}>
           Limpiar
         </button>
@@ -191,6 +188,9 @@
       </div>
 
       <div class="space-y-4">
+        <div class="text-sm text-base-content/60">
+          Resultados: <span class="font-semibold">{stations.length}</span>
+        </div>
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
             <div class="stat-title">Minimo</div>
