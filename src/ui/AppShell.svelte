@@ -45,7 +45,16 @@
     <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-3">
         <div class="grid h-12 w-12 place-items-center rounded-2xl bg-base-200">
-          <img src="/logo.png" alt="Gas Price Finder" class="h-8 w-8" />
+          <img
+            src="/logo-64.png"
+            srcset="/logo-64.png 64w, /logo-128.png 128w"
+            sizes="32px"
+            alt="Gas Price Finder"
+            class="h-8 w-8"
+            width="32"
+            height="32"
+            loading="eager"
+          />
         </div>
         <div>
           <p class="text-xs uppercase tracking-[0.35em] text-base-content/60">Gas Price Finder</p>
