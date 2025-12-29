@@ -41,6 +41,19 @@ const trackSearchEvent = ({ postalCode, productId, resultCount }) => {
   });
 };
 
+const trackFavoriteEvent = ({ postalCode, productId, nameLength }) => {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag !== "function") return;
+  if (!postalCodePattern.test(postalCode)) return;
+
+  window.gtag("event", "favorite_saved", {
+    postal_prefix: getPostalPrefix(postalCode),
+    fuel_id: productId,
+    fuel_label: fuelLabelById.get(productId) ?? null,
+    name_length: nameLength,
+  });
+};
+
 export const fuelSearch = (() => {
   const store = writable(initialState);
   const { subscribe, update } = store;
@@ -202,6 +215,11 @@ export const fuelSearch = (() => {
       },
     ];
     persistFavorites(nextFavorites);
+    trackFavoriteEvent({
+      postalCode: trimmedPostalCode,
+      productId: state.selectedProductId,
+      nameLength: trimmedName.length,
+    });
     update((current) => ({
       ...current,
       favorites: nextFavorites,
