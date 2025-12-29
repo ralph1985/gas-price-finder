@@ -72,6 +72,10 @@ function writeCache(payload, result) {
 }
 
 async function fetchFuelPrices(payload) {
+  console.log("[fuel-prices]", "fetch", {
+    postalCode: payload.codPostal,
+    productId: payload.idProducto,
+  });
   const response = await fetch(fuelPriceApiUrl, {
     method: "POST",
     headers: {
@@ -82,10 +86,19 @@ async function fetchFuelPrices(payload) {
   });
 
   if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    console.error("[fuel-prices]", "upstream error", {
+      status: response.status,
+      body: text.slice(0, 500),
+    });
     throw new Error(`Fuel prices request failed with status ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log("[fuel-prices]", "upstream ok", {
+    stations: data?.estaciones?.length ?? 0,
+  });
+  return data;
 }
 
 export class FuelPriceRepositoryServer {
