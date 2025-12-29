@@ -76,14 +76,34 @@ async function fetchFuelPrices(payload) {
     postalCode: payload.codPostal,
     productId: payload.idProducto,
   });
-  const response = await fetch(fuelPriceApiUrl, {
-    method: "POST",
-    headers: {
-      Accept: "application/json, text/plain, */*",
-      "Content-Type": "application/json; charset=UTF-8",
-    },
-    body: JSON.stringify(payload),
-  });
+  let response;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    response = await fetch(fuelPriceApiUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json; charset=UTF-8",
+        Origin: "https://geoportalgasolineras.es",
+        Referer: "https://geoportalgasolineras.es/geoportal-instalaciones/Inicio",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+  } catch (error) {
+    console.error("[fuel-prices]", "upstream fetch failed", {
+      error: error?.message ?? String(error),
+      name: error?.name,
+      code: error?.cause?.code,
+    });
+    throw error;
+  }
 
   if (!response.ok) {
     const text = await response.text().catch(() => "");
