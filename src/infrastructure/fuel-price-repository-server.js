@@ -78,10 +78,6 @@ function writeCache(payload, result) {
 }
 
 async function fetchFuelPrices(payload) {
-  console.log("[fuel-prices]", "fetch", {
-    postalCode: payload.codPostal,
-    productId: payload.idProducto,
-  });
   let response;
   try {
     const controller = new AbortController();
@@ -135,11 +131,6 @@ async function fetchFuelPrices(payload) {
     throw error;
   }
 
-  console.log("[fuel-prices]", "upstream ok", {
-    status: response.status,
-    contentType: response.headers.get("content-type"),
-    stations: data?.estaciones?.length ?? 0,
-  });
   return data;
 }
 
