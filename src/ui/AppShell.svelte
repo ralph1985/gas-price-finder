@@ -70,6 +70,8 @@
             <button
               class="btn btn-ghost btn-sm md:hidden"
               type="button"
+              aria-expanded={isSearchCollapsed}
+              aria-controls="search-panel"
               on:click={() => {
                 isSearchCollapsed = !isSearchCollapsed;
               }}
@@ -94,7 +96,10 @@
             </div>
           </div>
 
-          <div class={`space-y-4 ${isSearchCollapsed ? "hidden md:block" : ""}`}>
+          <div
+            id="search-panel"
+            class={`space-y-4 ${isSearchCollapsed ? "hidden md:block" : ""}`}
+          >
             {#if $fuelSearch.favorites.length > 0}
               <div class="space-y-3">
                 <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
@@ -113,6 +118,7 @@
                       <button
                         class="text-xs text-base-content/60"
                         type="button"
+                        aria-label={`Quitar favorito ${favorite.name} ${favorite.postalCode}`}
                         on:click={() => fuelSearch.removeFavorite(favorite)}
                       >
                         Quitar
@@ -127,8 +133,11 @@
               <span class="text-sm font-medium">Codigo postal</span>
               <input
                 type="text"
+                id="postal-code"
                 placeholder="28001"
                 inputmode="numeric"
+                autocomplete="postal-code"
+                aria-describedby="postal-help"
                 class="input input-bordered w-full"
                 value={$fuelSearch.postalCode}
                 on:input={(event) => {
@@ -136,7 +145,10 @@
                 }}
               />
             </label>
-            <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
+            <div
+              id="postal-help"
+              class="rounded-2xl border border-base-200 bg-base-200/40 p-3"
+            >
               <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
                 Ayuda
               </p>
@@ -145,8 +157,8 @@
               </p>
             </div>
 
-            <div class="space-y-2">
-              <p class="text-sm font-medium">Combustibles</p>
+            <fieldset class="space-y-2">
+              <legend class="text-sm font-medium">Combustibles</legend>
               {#each fuelProductCatalog as option}
                 <label class="flex items-center gap-3">
                   <input
@@ -159,7 +171,7 @@
                   <span>{option.label}</span>
                 </label>
               {/each}
-            </div>
+            </fieldset>
 
             <button class="btn btn-ghost w-full" type="button" on:click={fuelSearch.clear}>
               Limpiar
@@ -185,8 +197,8 @@
         </div>
       </div>
 
-      <div class="space-y-4">
-        <div class="text-sm text-base-content/60">
+      <div class="space-y-4" aria-busy={$fuelSearch.isLoading}>
+        <div class="text-sm text-base-content/60" aria-live="polite">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
         <p class="text-xs text-base-content/50">Ordenados por el más barato.</p>
@@ -227,11 +239,11 @@
             {/each}
           </div>
         {:else if $fuelSearch.errorMessage}
-          <div class="alert alert-error">
+          <div class="alert alert-error" role="alert">
             <span>{$fuelSearch.errorMessage}</span>
           </div>
         {:else if $fuelSearch.response.status === "ready" && formattedStations.length === 0}
-          <div class="alert alert-info">
+          <div class="alert alert-info" role="status">
             <span>No hay resultados todavia.</span>
           </div>
         {/if}
