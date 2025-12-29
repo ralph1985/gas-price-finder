@@ -40,7 +40,10 @@
     <div class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
       <div class="text-sm text-base-content/80">
         Usamos cookies analiticas para entender el uso de la app. Puedes aceptarlas o
-        rechazarlas.
+        rechazarlas. Consulta la
+        <a class="underline" href="/cookies.html" target="_blank" rel="noreferrer">
+          politica de cookies
+        </a>.
       </div>
       <div class="flex gap-2">
         <button class="btn btn-sm btn-ghost" type="button" on:click={reject}>
