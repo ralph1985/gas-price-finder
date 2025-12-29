@@ -26,6 +26,19 @@ const initialState = {
 };
 
 const canUseStorage = () => typeof localStorage !== "undefined";
+const getPostalPrefix = (postalCode) => postalCode.slice(0, 2);
+
+const trackSearchEvent = ({ postalCode, productId, resultCount }) => {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag !== "function") return;
+  if (!postalCodePattern.test(postalCode)) return;
+
+  window.gtag("event", "search_postal_code", {
+    postal_prefix: getPostalPrefix(postalCode),
+    fuel_id: productId,
+    results_count: resultCount,
+  });
+};
 
 export const fuelSearch = (() => {
   const store = writable(initialState);
@@ -255,6 +268,12 @@ export const fuelSearch = (() => {
       { postalCode: trimmedPostalCode },
       [state.selectedProductId]
     );
+
+    trackSearchEvent({
+      postalCode: trimmedPostalCode,
+      productId: state.selectedProductId,
+      resultCount: nextResponse?.result?.estaciones?.length ?? 0,
+    });
 
     update((current) => ({
       ...current,
