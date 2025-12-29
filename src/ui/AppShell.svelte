@@ -13,6 +13,8 @@
   } from "./utils/fuel-format.js";
   import CookieConsent from "./components/CookieConsent.svelte";
 
+  let isSearchCollapsed = false;
+
   onMount(() => {
     fuelSearch.init();
   });
@@ -23,6 +25,9 @@
     fuelBadgeClassById,
   });
   $: priceStats = calculatePriceStats(stations);
+  $: selectedFuelLabel = $fuelSearch.selectedProductId
+    ? fuelLabelById[$fuelSearch.selectedProductId] ?? "Combustible"
+    : "Sin combustible";
 </script>
 
 <main data-theme="light" class="min-h-screen bg-base-100 text-base-content">
@@ -56,88 +61,124 @@
     <section class="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       <div class="card border border-base-200 bg-base-100/90 shadow-xl backdrop-blur">
         <div class="card-body gap-4">
-          <div>
-            <h2 class="text-lg font-semibold">Busqueda rapida</h2>
-            <p class="text-xs text-base-content/60">
-              Rellena el codigo postal y elige combustible.
-            </p>
-          </div>
-          {#if $fuelSearch.favorites.length > 0}
-            <div class="space-y-3">
-              <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
-                Favoritos
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-semibold">Busqueda rapida</h2>
+              <p class="text-xs text-base-content/60">
+                Rellena el codigo postal y elige combustible.
               </p>
-              <div class="flex flex-wrap gap-2">
-                {#each $fuelSearch.favorites as favorite}
-                  <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
-                    <button
-                      class="text-xs font-semibold"
-                      type="button"
-                      on:click={() => fuelSearch.selectFavorite(favorite)}
-                    >
-                      {favorite.name} - {favorite.postalCode}
-                    </button>
-                    <button
-                      class="text-xs text-base-content/60"
-                      type="button"
-                      on:click={() => fuelSearch.removeFavorite(favorite)}
-                    >
-                      Quitar
-                    </button>
-                  </div>
-                {/each}
-              </div>
             </div>
-          {/if}
-
-          <label class="form-control gap-2">
-            <span class="text-sm font-medium">Codigo postal</span>
-            <input
-              type="text"
-              placeholder="28001"
-              inputmode="numeric"
-              class="input input-bordered w-full"
-              value={$fuelSearch.postalCode}
-              on:input={(event) => {
-                fuelSearch.setPostalCode(event.target.value);
+            <button
+              class="btn btn-ghost btn-sm md:hidden"
+              type="button"
+              on:click={() => {
+                isSearchCollapsed = !isSearchCollapsed;
               }}
-            />
-          </label>
-          <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
-            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">Ayuda</p>
-            <p class="mt-2 text-xs text-base-content/60">
-              El codigo postal debe tener 5 digitos.
-            </p>
+            >
+              {isSearchCollapsed ? "Editar" : "Minimizar"}
+            </button>
           </div>
 
-          <div class="space-y-2">
-            <p class="text-sm font-medium">Combustibles</p>
-            {#each fuelProductCatalog as option}
-              <label class="flex items-center gap-3">
-                <input
-                  type="radio"
-                  name="fuel-product"
-                  class="radio radio-sm"
-                  checked={$fuelSearch.selectedProductId === option.id}
-                  on:change={() => fuelSearch.setSelectedProductId(option.id)}
-                />
-                <span>{option.label}</span>
-              </label>
-            {/each}
-          </div>
-
-          <button
-            class="btn btn-primary w-full"
-            type="button"
-            class:loading={$fuelSearch.isLoading}
-            disabled={$fuelSearch.isLoading}
-            on:click={fuelSearch.search}
+          <div
+            class={`rounded-2xl border border-base-200 bg-base-200/40 p-3 md:hidden ${
+              isSearchCollapsed ? "block" : "hidden"
+            }`}
           >
-            Buscar precios
-          </button>
-          <button class="btn btn-outline w-full" type="button" on:click={fuelSearch.openFavoriteModal}>
-            Guardar
-          </button>
+            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+              Filtros aplicados
+            </p>
+            <div class="mt-2 flex flex-wrap gap-2 text-xs">
+              <span class="badge badge-outline">
+                CP: {$fuelSearch.postalCode || "Sin codigo"}
+              </span>
+              <span class="badge badge-outline">{selectedFuelLabel}</span>
+            </div>
+          </div>
+
+          <div class={`space-y-4 ${isSearchCollapsed ? "hidden md:block" : ""}`}>
+            {#if $fuelSearch.favorites.length > 0}
+              <div class="space-y-3">
+                <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+                  Favoritos
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  {#each $fuelSearch.favorites as favorite}
+                    <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
+                      <button
+                        class="text-xs font-semibold"
+                        type="button"
+                        on:click={() => fuelSearch.selectFavorite(favorite)}
+                      >
+                        {favorite.name} - {favorite.postalCode}
+                      </button>
+                      <button
+                        class="text-xs text-base-content/60"
+                        type="button"
+                        on:click={() => fuelSearch.removeFavorite(favorite)}
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+
+            <label class="form-control gap-2">
+              <span class="text-sm font-medium">Codigo postal</span>
+              <input
+                type="text"
+                placeholder="28001"
+                inputmode="numeric"
+                class="input input-bordered w-full"
+                value={$fuelSearch.postalCode}
+                on:input={(event) => {
+                  fuelSearch.setPostalCode(event.target.value);
+                }}
+              />
+            </label>
+            <div class="rounded-2xl border border-base-200 bg-base-200/40 p-3">
+              <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+                Ayuda
+              </p>
+              <p class="mt-2 text-xs text-base-content/60">
+                El codigo postal debe tener 5 digitos.
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-sm font-medium">Combustibles</p>
+              {#each fuelProductCatalog as option}
+                <label class="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="fuel-product"
+                    class="radio radio-sm"
+                    checked={$fuelSearch.selectedProductId === option.id}
+                    on:change={() => fuelSearch.setSelectedProductId(option.id)}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              {/each}
+            </div>
+
+            <button
+              class="btn btn-primary w-full"
+              type="button"
+              class:loading={$fuelSearch.isLoading}
+              disabled={$fuelSearch.isLoading}
+              on:click={fuelSearch.search}
+            >
+              Buscar precios
+            </button>
+            <button
+              class="btn btn-outline w-full"
+              type="button"
+              on:click={fuelSearch.openFavoriteModal}
+            >
+              Guardar
+            </button>
+          </div>
 
         </div>
       </div>
