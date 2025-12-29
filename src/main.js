@@ -28,6 +28,14 @@ const loadAnalytics = () => {
   })
 }
 
+const hasAnalyticsConsent = () => {
+  try {
+    return localStorage.getItem('analytics-consent') === 'true'
+  } catch {
+    return false
+  }
+}
+
 const app = mount(App, {
   target: document.getElementById('app'),
 })
@@ -38,6 +46,12 @@ if ('serviceWorker' in navigator) {
   })
 }
 
-loadAnalytics()
+if (hasAnalyticsConsent()) {
+  loadAnalytics()
+}
+
+window.addEventListener('analytics-consent-granted', () => {
+  loadAnalytics()
+})
 
 export default app

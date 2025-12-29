@@ -11,6 +11,7 @@
     buildFormattedStations,
     calculatePriceStats,
   } from "./utils/fuel-format.js";
+  import CookieConsent from "./components/CookieConsent.svelte";
 
   onMount(() => {
     fuelSearch.init();
@@ -290,3 +291,5 @@
     </div>
   {/if}
 </main>
+
+<CookieConsent />
