@@ -245,7 +245,7 @@
                     <h3 class="text-lg font-semibold">{station.title}</h3>
                     {#if station.mapUrl}
                       <a
-                        class="text-sm text-base-content/60 underline-offset-4 hover:underline"
+                        class="text-sm text-base-content/60 underline underline-offset-4"
                         href={station.mapUrl}
                         target="_blank"
                         rel="noreferrer"
@@ -269,18 +269,6 @@
                   {/if}
                   {#if station.schedule}
                     <span class="text-base-content/60">{station.schedule}</span>
-                  {/if}
-                </div>
-                <div class="card-actions justify-end pt-2">
-                  {#if station.mapUrl}
-                    <a
-                      class="btn btn-sm btn-ghost"
-                      href={station.mapUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Ver ruta
-                    </a>
                   {/if}
                 </div>
               </div>
