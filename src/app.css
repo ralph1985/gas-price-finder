@@ -21,4 +21,14 @@
   h3 {
     color: hsl(var(--gpf-ink));
   }
+
+  .badge {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .stat-value {
+    font-size: 1.65rem;
+  }
 }
