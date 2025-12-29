@@ -1,14 +1,20 @@
+import { readFileSync } from "node:fs";
+import { Agent } from "undici";
+
 import { FuelPriceSearchStatus } from "../interfaces/fuel-price-repository.js";
-import {
-  getCacheExpirationMs,
-  getFuelPricesCacheBucket,
-} from "./fuel-price-cache.js";
+import { getCacheExpirationMs, getFuelPricesCacheBucket } from "./fuel-price-cache.js";
 
 const fuelPriceApiUrl =
   "https://geoportalgasolineras.es/geoportal/rest/busquedaEstaciones";
 const fuelPricesCachePrefix = "gpf:fuel-prices";
 
 const cache = new Map();
+const caBundle = readFileSync(new URL("./ca/fnmt-chain.pem", import.meta.url), "utf8");
+const dispatcher = new Agent({
+  connect: {
+    ca: caBundle,
+  },
+});
 
 function buildSearchPayload(criteria) {
   const bounds = criteria.bounds ?? {};
@@ -93,6 +99,7 @@ async function fetchFuelPrices(payload) {
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
+      dispatcher,
     });
 
     clearTimeout(timeoutId);

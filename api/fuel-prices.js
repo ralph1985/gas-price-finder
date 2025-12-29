@@ -2,26 +2,13 @@ import { getCacheExpirationSeconds } from "../src/infrastructure/fuel-price-cach
 import { FuelPriceRepositoryServer } from "../src/infrastructure/fuel-price-repository-server.js";
 import { createFuelPriceUsecases } from "../src/usecases/list-fuel-prices.js";
 
-export const config = {
-  runtime: "edge",
-};
-
 const repository = new FuelPriceRepositoryServer();
 const { listFuelPricesUseCase } = createFuelPriceUsecases(repository);
 
-const jsonResponse = (payload, status = 200, headers = {}) =>
-  new Response(JSON.stringify(payload), {
-    status,
-    headers: {
-      "content-type": "application/json",
-      ...headers,
-    },
-  });
-
-export default async function handler(request) {
+export default async function handler(request, response) {
   const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  const contentLength = request.headers.get("content-length");
-  const contentType = request.headers.get("content-type");
+  const contentLength = request.headers["content-length"];
+  const contentType = request.headers["content-type"];
   console.log("[fuel-prices]", requestId, "incoming", {
     method: request.method,
     contentLength,
@@ -30,29 +17,23 @@ export default async function handler(request) {
 
   if (request.method !== "POST") {
     console.warn("[fuel-prices]", requestId, "method not allowed");
-    return jsonResponse({ error: "Method not allowed" }, 405);
+    response.status(405).json({ error: "Method not allowed" });
+    return;
   }
 
-  let body = null;
-  try {
-    body = await request.json();
-  } catch (error) {
-    console.warn("[fuel-prices]", requestId, "invalid json body", {
-      error: error?.message ?? String(error),
-    });
-  }
-
-  const postalCode = String(body?.postalCode ?? "").trim();
-  const productId = String(body?.productId ?? "").trim();
+  const postalCode = String(request.body?.postalCode ?? "").trim();
+  const productId = String(request.body?.productId ?? "").trim();
 
   if (!/^\d{5}$/.test(postalCode)) {
     console.warn("[fuel-prices]", requestId, "invalid postal code", { postalCode });
-    return jsonResponse({ error: "Invalid postal code" }, 400);
+    response.status(400).json({ error: "Invalid postal code" });
+    return;
   }
 
   if (!productId) {
     console.warn("[fuel-prices]", requestId, "missing product id");
-    return jsonResponse({ error: "Missing product id" }, 400);
+    response.status(400).json({ error: "Missing product id" });
+    return;
   }
 
   try {
@@ -61,11 +42,12 @@ export default async function handler(request) {
       status: result?.status,
       stations: result?.result?.estaciones?.length ?? 0,
     });
-    return jsonResponse(result, 200, {
-      "Cache-Control": `s-maxage=${getCacheExpirationSeconds()}`,
-    });
+    response
+      .status(200)
+      .setHeader("Cache-Control", `s-maxage=${getCacheExpirationSeconds()}`)
+      .json(result);
   } catch (error) {
     console.error("[fuel-prices]", requestId, "error", error);
-    return jsonResponse({ result: null, status: "error" }, 500);
+    response.status(500).json({ result: null, status: "error" });
   }
 }
