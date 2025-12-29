@@ -57,7 +57,7 @@
           />
         </div>
         <div>
-          <p class="text-xs uppercase tracking-[0.35em] text-base-content/60">Gas Price Finder</p>
+          <p class="text-xs uppercase tracking-[0.35em] text-base-content/70">Gas Price Finder</p>
           <h1 class="text-2xl font-semibold md:text-3xl">Busca el mejor precio cerca</h1>
           <p class="text-sm text-base-content/70">
             Consulta precios actualizados por codigo postal.
@@ -72,7 +72,7 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-lg font-semibold">Busqueda rapida</h2>
-              <p class="text-xs text-base-content/60">
+              <p class="text-xs text-base-content/70">
                 Rellena el codigo postal y elige combustible.
               </p>
             </div>
@@ -94,7 +94,7 @@
               isSearchCollapsed ? "block" : "hidden"
             }`}
           >
-            <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+            <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
               Filtros aplicados
             </p>
             <div class="mt-2 flex flex-wrap gap-2 text-xs">
@@ -111,7 +111,7 @@
           >
             {#if $fuelSearch.favorites.length > 0}
               <div class="space-y-3">
-                <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+                <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
                   Favoritos
                 </p>
                 <div class="flex flex-wrap gap-2">
@@ -125,7 +125,7 @@
                         {favorite.name} - {favorite.postalCode}
                       </button>
                       <button
-                        class="text-xs text-base-content/60"
+                        class="text-xs text-base-content/70"
                         type="button"
                         aria-label={`Quitar favorito ${favorite.name} ${favorite.postalCode}`}
                         on:click={() => fuelSearch.removeFavorite(favorite)}
@@ -158,10 +158,10 @@
               id="postal-help"
               class="rounded-2xl border border-base-200 bg-base-200/40 p-3"
             >
-              <p class="text-xs uppercase tracking-[0.2em] text-base-content/60">
+              <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
                 Ayuda
               </p>
-              <p class="mt-2 text-xs text-base-content/60">
+              <p class="mt-2 text-xs text-base-content/70">
                 El codigo postal debe tener 5 digitos.
               </p>
             </div>
@@ -207,25 +207,25 @@
       </div>
 
       <div class="space-y-4" aria-busy={$fuelSearch.isLoading}>
-        <div class="text-sm text-base-content/60" aria-live="polite">
+        <div class="text-sm text-base-content/70" aria-live="polite">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
-        <p class="text-xs text-base-content/50">Ordenados por el más barato.</p>
+        <p class="text-xs text-base-content/70">Ordenados por el más barato.</p>
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
-            <div class="stat-title">Minimo</div>
+            <div class="stat-title text-base-content/70">Minimo</div>
             <div class="stat-value text-primary">
               {priceStats.min != null ? priceStats.min.toFixed(3) : "--"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-title">Promedio</div>
+            <div class="stat-title text-base-content/70">Promedio</div>
             <div class="stat-value">
               {priceStats.avg != null ? priceStats.avg.toFixed(3) : "--"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-title">Maximo</div>
+            <div class="stat-title text-base-content/70">Maximo</div>
             <div class="stat-value text-secondary">
               {priceStats.max != null ? priceStats.max.toFixed(3) : "--"}
             </div>
@@ -266,7 +266,7 @@
                     <h3 class="text-lg font-semibold">{station.title}</h3>
                     {#if station.mapUrl}
                       <a
-                        class="text-sm text-base-content/60 underline underline-offset-4"
+                        class="text-sm text-base-content/70 underline underline-offset-4"
                         href={station.mapUrl}
                         target="_blank"
                         rel="noreferrer"
@@ -274,11 +274,11 @@
                         {station.address}
                       </a>
                     {:else}
-                      <p class="text-sm text-base-content/60">{station.address}</p>
+                      <p class="text-sm text-base-content/70">{station.address}</p>
                     {/if}
                   </div>
                   {#if station.fuelLabel}
-                    <span class={`badge badge-outline ${station.fuelBadgeClass ?? ""}`}>
+                    <span class={`badge ${station.fuelBadgeClass ?? "badge-outline"}`}>
                       {station.fuelLabel}
                     </span>
                   {/if}
@@ -289,7 +289,7 @@
                     <span class="text-base-content/70">{station.update}</span>
                   {/if}
                   {#if station.schedule}
-                    <span class="text-base-content/60">{station.schedule}</span>
+                    <span class="text-base-content/70">{station.schedule}</span>
                   {/if}
                 </div>
               </div>
@@ -307,7 +307,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <div class="text-lg font-semibold">Guardar favorito</div>
-              <p class="text-sm text-base-content/60">
+              <p class="text-sm text-base-content/70">
                 Guarda el codigo postal y la seleccion actual de combustibles.
               </p>
             </div>

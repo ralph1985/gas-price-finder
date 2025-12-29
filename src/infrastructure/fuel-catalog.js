@@ -9,7 +9,7 @@ export const fuelBadgeClassById = {
   "1": "badge-success",
   "3": "badge-info",
   "4": "badge-neutral",
-  "5": "badge-ghost",
+  "5": "badge-warning",
 };
 
 export const fuelLabelById = new Map(
