@@ -12,10 +12,10 @@
   const fuelSelectionStorageKey = "gpf:fuelSelection";
   const lastPostalCodeStorageKey = "gpf:lastPostalCode";
   const fuelFavoritesStorageKey = "gpf:fuelFavorites";
-  const defaultProductIds = ["4", "1"].filter((id) => fuelProductIds.includes(id));
+  const defaultProductId = fuelProductIds.includes("4") ? "4" : fuelProductIds[0];
 
   let postalCode = "";
-  let selectedProductIds = [...defaultProductIds];
+  let selectedProductId = defaultProductId;
   let response = { status: "ready", result: null };
   let isLoading = false;
   let errorMessage = null;
@@ -46,10 +46,15 @@
     if (!stored) return;
     try {
       const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) return;
-      const sanitized = parsed.filter((value) => fuelProductIds.includes(value));
-      if (sanitized.length > 0) {
-        selectedProductIds = sanitized;
+      if (typeof parsed === "string" && fuelProductIds.includes(parsed)) {
+        selectedProductId = parsed;
+        return;
+      }
+      if (Array.isArray(parsed)) {
+        const sanitized = parsed.filter((value) => fuelProductIds.includes(value));
+        if (sanitized.length > 0) {
+          selectedProductId = sanitized[0];
+        }
       }
     } catch {
       return;
@@ -79,7 +84,11 @@
           const productIds = Array.isArray(value.productIds)
             ? value.productIds.filter((id) => fuelProductIds.includes(id))
             : [];
-          return { ...value, productIds };
+          const productId =
+            typeof value.productId === "string" && fuelProductIds.includes(value.productId)
+              ? value.productId
+              : productIds[0] ?? defaultProductId;
+          return { ...value, productId };
         });
     } catch {
       return;
@@ -94,7 +103,7 @@
     if (!postalCodePattern.test(postalCode)) {
       return;
     }
-    if (selectedProductIds.length === 0) {
+    if (!selectedProductId) {
       return;
     }
     await handleSearch();
@@ -112,7 +121,7 @@
   });
 
   $: if (hasHydrated) {
-    persistFuelSelection(selectedProductIds);
+    persistFuelSelection(selectedProductId);
   }
 
   $: if (hasHydrated && postalCodePattern.test(postalCode)) {
@@ -173,16 +182,12 @@
   $: priceStats = calculatePriceStats(stations);
 
   const toggleFuelSelection = (id) => {
-    if (selectedProductIds.includes(id)) {
-      selectedProductIds = selectedProductIds.filter((value) => value !== id);
-      return;
-    }
-    selectedProductIds = [...selectedProductIds, id];
+    selectedProductId = id;
   };
 
   const handleClear = () => {
     postalCode = "";
-    selectedProductIds = [...defaultProductIds];
+    selectedProductId = defaultProductId;
     response = { status: "ready", result: null };
     errorMessage = null;
   };
@@ -212,7 +217,7 @@
         id: `${trimmedPostalCode}-${Date.now()}`,
         name: trimmedName,
         postalCode: trimmedPostalCode,
-        productIds: [...selectedProductIds],
+        productId: selectedProductId,
       },
     ];
     favoriteName = "";
@@ -222,8 +227,8 @@
 
   const handleSelectFavorite = async (favorite) => {
     postalCode = favorite.postalCode;
-    if (Array.isArray(favorite.productIds) && favorite.productIds.length > 0) {
-      selectedProductIds = favorite.productIds.filter((id) => fuelProductIds.includes(id));
+    if (typeof favorite.productId === "string" && fuelProductIds.includes(favorite.productId)) {
+      selectedProductId = favorite.productId;
     }
     await tick();
     await triggerSearch();
@@ -241,7 +246,7 @@
       response = { status: "ready", result: null };
       return;
     }
-    if (selectedProductIds.length === 0) {
+    if (!selectedProductId) {
       errorMessage = "Selecciona al menos un combustible.";
       response = { status: "ready", result: null };
       return;
@@ -252,7 +257,7 @@
 
     const nextResponse = await listFuelPricesBatchUseCase(
       { postalCode: trimmedPostalCode },
-      selectedProductIds
+      [selectedProductId]
     );
 
     response = nextResponse;
@@ -353,9 +358,10 @@
             {#each fuelProductCatalog as option}
               <label class="flex items-center gap-3">
                 <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  checked={selectedProductIds.includes(option.id)}
+                  type="radio"
+                  name="fuel-product"
+                  class="radio radio-sm"
+                  checked={selectedProductId === option.id}
                   on:change={() => toggleFuelSelection(option.id)}
                 />
                 <span>{option.label}</span>
