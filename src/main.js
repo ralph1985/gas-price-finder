@@ -3,6 +3,18 @@ import './app.css'
 import App from './App.svelte'
 
 const GOOGLE_ANALYTICS_ID = import.meta.env.VITE_GOOGLE_ANALYTICS_ID
+const THEME_STORAGE_KEY = 'gpf-theme'
+
+const resolveInitialTheme = () => {
+  if (typeof window === 'undefined') return 'light'
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored === 'dark' || stored === 'light') return stored
+  } catch {
+    // ignore storage access
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
 
 const loadAnalytics = () => {
   if (!GOOGLE_ANALYTICS_ID || typeof window === 'undefined') return
@@ -35,6 +47,9 @@ const hasAnalyticsConsent = () => {
     return false
   }
 }
+
+const initialTheme = resolveInitialTheme()
+document.documentElement.setAttribute('data-theme', initialTheme)
 
 const app = mount(App, {
   target: document.getElementById('app'),

@@ -15,9 +15,11 @@
 
   let isSearchCollapsed = false;
   let wasLoading = false;
+  let theme = "light";
 
   onMount(() => {
     fuelSearch.init();
+    theme = document.documentElement.getAttribute("data-theme") || "light";
   });
 
   $: stations = $fuelSearch.response?.result?.estaciones ?? [];
@@ -37,7 +39,7 @@
   }
 </script>
 
-<main data-theme="light" class="min-h-screen bg-base-100 text-base-content">
+<main class="min-h-screen bg-base-100 text-base-content">
   <div
     class="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,hsl(var(--gpf-accent)/0.25),transparent_70%)]"
   ></div>
@@ -64,6 +66,22 @@
           </p>
         </div>
       </div>
+      <button
+        class="btn btn-ghost btn-sm self-start md:self-auto"
+        type="button"
+        aria-label="Cambiar tema"
+        on:click={() => {
+          theme = theme === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+          try {
+            localStorage.setItem("gpf-theme", theme);
+          } catch {
+            // ignore storage access
+          }
+        }}
+      >
+        {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+      </button>
     </header>
 
     <section class="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
