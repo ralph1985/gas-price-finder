@@ -44,7 +44,7 @@
     class="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,hsl(var(--gpf-accent)/0.25),transparent_70%)]"
   ></div>
   <div class="mx-auto max-w-5xl px-4 py-6 md:py-10">
-    <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <header class="flex items-start gap-3">
       <div class="flex items-center gap-3">
         <div class="grid h-12 w-12 place-items-center rounded-2xl bg-base-200">
           <img
@@ -58,66 +58,68 @@
             loading="eager"
           />
         </div>
-        <div>
-          <p class="text-xs uppercase tracking-[0.35em] gpf-muted">Gas Price Finder</p>
-          <h1 class="text-2xl font-semibold md:text-3xl">Busca el mejor precio cerca</h1>
-          <p class="text-sm gpf-muted">
-            Consulta precios actualizados por codigo postal.
-          </p>
-        </div>
       </div>
-      <button
-        class="btn btn-ghost btn-sm ml-auto"
-        type="button"
-        aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-        on:click={() => {
-          theme = theme === "dark" ? "light" : "dark";
-          document.documentElement.setAttribute("data-theme", theme);
-          try {
-            localStorage.setItem("gpf-theme", theme);
-          } catch {
-            // ignore storage access
-          }
-        }}
-      >
-        {#if theme === "dark"}
-          <svg
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
+      <div class="min-w-0 flex-1">
+        <p class="text-xs uppercase tracking-[0.35em] gpf-muted">Gas Price Finder</p>
+        <div class="flex items-center justify-between gap-3">
+          <h1 class="text-2xl font-semibold md:text-3xl">Busca el mejor precio cerca</h1>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            on:click={() => {
+              theme = theme === "dark" ? "light" : "dark";
+              document.documentElement.setAttribute("data-theme", theme);
+              try {
+                localStorage.setItem("gpf-theme", theme);
+              } catch {
+                // ignore storage access
+              }
+            }}
           >
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2"></path>
-            <path d="M12 20v2"></path>
-            <path d="M4.93 4.93l1.41 1.41"></path>
-            <path d="M17.66 17.66l1.41 1.41"></path>
-            <path d="M2 12h2"></path>
-            <path d="M20 12h2"></path>
-            <path d="M4.93 19.07l1.41-1.41"></path>
-            <path d="M17.66 6.34l1.41-1.41"></path>
-          </svg>
-          <span class="sr-only">Modo claro</span>
-        {:else}
-          <svg
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
-          </svg>
-          <span class="sr-only">Modo oscuro</span>
-        {/if}
-      </button>
+            {#if theme === "dark"}
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="M4.93 4.93l1.41 1.41"></path>
+                <path d="M17.66 17.66l1.41 1.41"></path>
+                <path d="M2 12h2"></path>
+                <path d="M20 12h2"></path>
+                <path d="M4.93 19.07l1.41-1.41"></path>
+                <path d="M17.66 6.34l1.41-1.41"></path>
+              </svg>
+              <span class="sr-only">Modo claro</span>
+            {:else}
+              <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
+              </svg>
+              <span class="sr-only">Modo oscuro</span>
+            {/if}
+          </button>
+        </div>
+        <p class="text-sm gpf-muted">
+          Consulta precios actualizados por codigo postal.
+        </p>
+      </div>
     </header>
 
     <section class="mt-6 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
