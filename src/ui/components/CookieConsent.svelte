@@ -38,6 +38,13 @@
     isPolicyOpen = false;
   };
 
+  const handleKeydown = (event) => {
+    if (!isPolicyOpen) return;
+    if (event.key === "Escape") {
+      closePolicy();
+    }
+  };
+
   if (typeof window !== "undefined") {
     const stored = readConsent();
     isVisible = stored === null;
@@ -67,6 +74,7 @@
 {/if}
 
 {#if isPolicyOpen}
+  <svelte:window on:keydown={handleKeydown} />
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
     <div class="card w-full max-w-2xl border border-base-200 bg-base-100 shadow-xl">
       <div class="card-body gap-4">
