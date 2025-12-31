@@ -107,15 +107,6 @@
             </p>
           </div>
 
-          <div>
-            <p class="font-semibold">Contacto</p>
-            <p>
-              Si tienes dudas sobre esta politica, escribe a
-              <a class="underline" href="mailto:info@gaspricefinder.app">
-                info@gaspricefinder.app
-              </a>.
-            </p>
-          </div>
         </div>
       </div>
     </div>
