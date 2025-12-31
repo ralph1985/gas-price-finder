@@ -195,7 +195,17 @@
             {/if}
 
             <label class="form-control gap-2">
-              <span class="text-sm font-medium">Codigo postal</span>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-medium">Codigo postal</span>
+                <button
+                  class="btn btn-ghost btn-xs"
+                  type="button"
+                  disabled={$fuelSearch.isLocating}
+                  on:click={fuelSearch.locatePostalCode}
+                >
+                  {$fuelSearch.isLocating ? "Localizando..." : "Usar ubicacion"}
+                </button>
+              </div>
               <input
                 type="text"
                 id="postal-code"
@@ -210,6 +220,11 @@
                 }}
               />
             </label>
+            {#if $fuelSearch.locationError}
+              <div class="alert alert-warning" role="alert">
+                <span>{$fuelSearch.locationError}</span>
+              </div>
+            {/if}
             <div
               id="postal-help"
               class="rounded-2xl border border-base-200 bg-base-200/40 p-3"

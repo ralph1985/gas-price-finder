@@ -2,6 +2,7 @@ import { get, writable } from "svelte/store";
 
 import { fuelLabelById, fuelProductIds } from "../../infrastructure/fuel-catalog.js";
 import { listFuelPricesBatchUseCase } from "../../usecases/list-fuel-prices.js";
+import { locatePostalCodeUseCase } from "../../usecases/locate-postal-code.js";
 import {
   normalizePostalCode,
   postalCodePattern,
@@ -23,6 +24,8 @@ const initialState = {
   favoriteName: "",
   favoriteError: null,
   hasHydrated: false,
+  isLocating: false,
+  locationError: null,
 };
 
 const canUseStorage = () => typeof localStorage !== "undefined";
@@ -305,6 +308,78 @@ export const fuelSearch = (() => {
     }));
   };
 
+  const locatePostalCode = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      update((state) => ({
+        ...state,
+        locationError: "La geolocalizacion no esta disponible en este navegador.",
+      }));
+      return;
+    }
+
+    update((state) => ({
+      ...state,
+      isLocating: true,
+      locationError: null,
+    }));
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const postalCode = await locatePostalCodeUseCase({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            signal: controller.signal,
+          });
+
+          if (!postalCode) {
+            throw new Error("No se ha encontrado un codigo postal valido.");
+          }
+
+          setPostalCode(postalCode);
+          await search();
+          update((state) => ({
+            ...state,
+            isLocating: false,
+            locationError: null,
+          }));
+        } catch {
+          update((state) => ({
+            ...state,
+            isLocating: false,
+            locationError:
+              "No se ha podido obtener el codigo postal desde la ubicacion.",
+          }));
+        } finally {
+          clearTimeout(timeout);
+        }
+      },
+      (error) => {
+        clearTimeout(timeout);
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "Permiso de ubicacion denegado."
+            : error.code === error.TIMEOUT
+              ? "Tiempo de espera agotado al obtener la ubicacion."
+              : "No se ha podido acceder a la ubicacion.";
+
+        update((state) => ({
+          ...state,
+          isLocating: false,
+          locationError: message,
+        }));
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 600000,
+      }
+    );
+  };
+
   return {
     subscribe,
     init,
@@ -318,5 +393,6 @@ export const fuelSearch = (() => {
     selectFavorite,
     clear,
     search,
+    locatePostalCode,
   };
 })();
