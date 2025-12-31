@@ -33,6 +33,16 @@
   }
 }
 
+@layer components {
+  .gpf-muted {
+    color: hsl(var(--bc) / 0.7);
+  }
+
+  [data-theme="dark"] .gpf-muted {
+    color: hsl(var(--bc) / 0.85);
+  }
+}
+
 @media (max-width: 767px) {
   .stat-value {
     font-size: 1.65rem;

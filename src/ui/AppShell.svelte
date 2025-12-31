@@ -59,9 +59,9 @@
           />
         </div>
         <div>
-          <p class="text-xs uppercase tracking-[0.35em] text-base-content/70">Gas Price Finder</p>
+          <p class="text-xs uppercase tracking-[0.35em] gpf-muted">Gas Price Finder</p>
           <h1 class="text-2xl font-semibold md:text-3xl">Busca el mejor precio cerca</h1>
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm gpf-muted">
             Consulta precios actualizados por codigo postal.
           </p>
         </div>
@@ -69,7 +69,7 @@
       <button
         class="btn btn-ghost btn-sm self-start md:self-auto"
         type="button"
-        aria-label="Cambiar tema"
+        aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
         on:click={() => {
           theme = theme === "dark" ? "light" : "dark";
           document.documentElement.setAttribute("data-theme", theme);
@@ -80,7 +80,43 @@
           }
         }}
       >
-        {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+        {#if theme === "dark"}
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="M4.93 4.93l1.41 1.41"></path>
+            <path d="M17.66 17.66l1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="M4.93 19.07l1.41-1.41"></path>
+            <path d="M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <span class="sr-only">Modo claro</span>
+        {:else}
+          <svg
+            class="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
+          </svg>
+          <span class="sr-only">Modo oscuro</span>
+        {/if}
       </button>
     </header>
 
@@ -90,7 +126,7 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <h2 class="text-lg font-semibold">Busqueda rapida</h2>
-              <p class="text-xs text-base-content/70">
+              <p class="text-xs gpf-muted">
                 Rellena el codigo postal y elige combustible.
               </p>
             </div>
@@ -112,7 +148,7 @@
               isSearchCollapsed ? "block" : "hidden"
             }`}
           >
-            <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
+            <p class="text-xs uppercase tracking-[0.2em] gpf-muted">
               Filtros aplicados
             </p>
             <div class="mt-2 flex flex-wrap gap-2 text-xs">
@@ -129,7 +165,7 @@
           >
             {#if $fuelSearch.favorites.length > 0}
               <div class="space-y-3">
-                <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
+                <p class="text-xs uppercase tracking-[0.2em] gpf-muted">
                   Favoritos
                 </p>
                 <div class="flex flex-wrap gap-2">
@@ -143,7 +179,7 @@
                         {favorite.name} - {favorite.postalCode}
                       </button>
                       <button
-                        class="text-xs text-base-content/70"
+                        class="text-xs gpf-muted"
                         type="button"
                         aria-label={`Quitar favorito ${favorite.name} ${favorite.postalCode}`}
                         on:click={() => fuelSearch.removeFavorite(favorite)}
@@ -176,10 +212,10 @@
               id="postal-help"
               class="rounded-2xl border border-base-200 bg-base-200/40 p-3"
             >
-              <p class="text-xs uppercase tracking-[0.2em] text-base-content/70">
+              <p class="text-xs uppercase tracking-[0.2em] gpf-muted">
                 Ayuda
               </p>
-              <p class="mt-2 text-xs text-base-content/70">
+              <p class="mt-2 text-xs gpf-muted">
                 El codigo postal debe tener 5 digitos.
               </p>
             </div>
@@ -225,25 +261,25 @@
       </div>
 
       <div class="space-y-4" aria-busy={$fuelSearch.isLoading}>
-        <div class="text-sm text-base-content/70" aria-live="polite">
+        <div class="text-sm gpf-muted" aria-live="polite">
           Resultados: <span class="font-semibold">{stations.length}</span>
         </div>
-        <p class="text-xs text-base-content/70">Ordenados por el más barato.</p>
+        <p class="text-xs gpf-muted">Ordenados por el más barato.</p>
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
           <div class="stat">
-            <div class="stat-title text-base-content/70">Minimo</div>
+            <div class="stat-title gpf-muted">Minimo</div>
             <div class="stat-value text-primary">
               {priceStats.min != null ? priceStats.min.toFixed(3) : "--"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-title text-base-content/70">Promedio</div>
+            <div class="stat-title gpf-muted">Promedio</div>
             <div class="stat-value">
               {priceStats.avg != null ? priceStats.avg.toFixed(3) : "--"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-title text-base-content/70">Maximo</div>
+            <div class="stat-title gpf-muted">Maximo</div>
             <div class="stat-value text-secondary">
               {priceStats.max != null ? priceStats.max.toFixed(3) : "--"}
             </div>
@@ -284,7 +320,7 @@
                     <h3 class="text-lg font-semibold">{station.title}</h3>
                     {#if station.mapUrl}
                       <a
-                        class="text-sm text-base-content/70 underline underline-offset-4"
+                        class="text-sm gpf-muted underline underline-offset-4"
                         href={station.mapUrl}
                         target="_blank"
                         rel="noreferrer"
@@ -292,7 +328,7 @@
                         {station.address}
                       </a>
                     {:else}
-                      <p class="text-sm text-base-content/70">{station.address}</p>
+                      <p class="text-sm gpf-muted">{station.address}</p>
                     {/if}
                   </div>
                   {#if station.fuelLabel}
@@ -304,10 +340,10 @@
                 <div class="flex flex-wrap items-center gap-3 text-sm">
                   <span class="badge badge-neutral">{station.price}</span>
                   {#if station.update}
-                    <span class="text-base-content/70">{station.update}</span>
+                    <span class="gpf-muted">{station.update}</span>
                   {/if}
                   {#if station.schedule}
-                    <span class="text-base-content/70">{station.schedule}</span>
+                    <span class="gpf-muted">{station.schedule}</span>
                   {/if}
                 </div>
               </div>
@@ -325,7 +361,7 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <div class="text-lg font-semibold">Guardar favorito</div>
-              <p class="text-sm text-base-content/70">
+              <p class="text-sm gpf-muted">
                 Guarda el codigo postal y la seleccion actual de combustibles.
               </p>
             </div>
