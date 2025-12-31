@@ -223,6 +223,14 @@
             {#if $fuelSearch.locationError}
               <div class="alert alert-warning" role="alert">
                 <span>{$fuelSearch.locationError}</span>
+                <button
+                  class="btn btn-ghost btn-xs"
+                  type="button"
+                  aria-label="Cerrar aviso"
+                  on:click={fuelSearch.clearLocationError}
+                >
+                  ✕
+                </button>
               </div>
             {/if}
             <div

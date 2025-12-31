@@ -380,6 +380,10 @@ export const fuelSearch = (() => {
     );
   };
 
+  const clearLocationError = () => {
+    update((state) => ({ ...state, locationError: null }));
+  };
+
   return {
     subscribe,
     init,
@@ -394,5 +398,6 @@ export const fuelSearch = (() => {
     clear,
     search,
     locatePostalCode,
+    clearLocationError,
   };
 })();
