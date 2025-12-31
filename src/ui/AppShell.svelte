@@ -67,7 +67,7 @@
         </div>
       </div>
       <button
-        class="btn btn-ghost btn-sm self-start md:self-auto"
+        class="btn btn-ghost btn-sm ml-auto"
         type="button"
         aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
         on:click={() => {
