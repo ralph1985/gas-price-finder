@@ -62,8 +62,9 @@ No subas `.env`. Documenta variables de entorno en `README.md` si aparecen.
 
 ## Gestion de tareas y horas
 
-- Al empezar, identifica el proyecto y usa ese nombre en `project`.
-- Busca si ya existe una tarea "En curso"; si existe, registra horas y notas ahi.
-- Si no existe, crea una nueva con `npm run task:add` en el monorepo (o edita a mano manteniendo `dd/mm/aaaa`, id incremental y minimos: `status`, `startDate`, `hours`, `project`).
-- Registra siempre la actividad en `../../data/projects-tasks.json` del monorepo.
+- Al empezar, identifica el `projectId` en `../../dashboard/data/projects.json`.
+- Busca si ya existe una tarea "En curso" en `../../dashboard/data/projects-tasks.json` para ese `projectId`.
+- Si existe, registra el tiempo en `../../dashboard/data/task-entries.json` con `taskId`, `date` (`dd/mm/aaaa`), `hours` y `note` opcional; añade notas largas en `../../dashboard/data/task-notes.json`.
+- Si no existe, crea una nueva tarea (recomendado: `node ../../dashboard/scripts/add-task.js` desde el monorepo) o edita a mano en `projects-tasks.json` con `id` incremental, `title`, `projectId`, `phase`, `status`, `ownerId`, `startDate`, `endDate`, y luego añade la entrada de horas en `task-entries.json`.
+- El `ownerId` debe existir en `../../dashboard/data/people.json`.
 - Proyecto de referencia para este repo: `gas-price-finder`.
