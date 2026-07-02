@@ -55,10 +55,10 @@
   <div class="fixed inset-x-0 bottom-0 z-50 bg-base-100/95 shadow-lg backdrop-blur">
     <div class="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
       <div class="text-sm text-base-content/80">
-        Usamos cookies analiticas para entender el uso de la app. Puedes aceptarlas o
+        Usamos cookies analíticas para entender el uso de la app. Puedes aceptarlas o
         rechazarlas. Consulta la
         <button class="underline" type="button" on:click={openPolicy}>
-          politica de cookies
+          política de cookies
         </button>.
       </div>
       <div class="flex gap-2">
@@ -81,8 +81,8 @@
       <div class="card-body gap-4">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-lg font-semibold">Politica de cookies</div>
-            <p class="text-sm text-base-content/70">Ultima actualizacion: 29/12/2025</p>
+            <div class="text-lg font-semibold">Política de cookies</div>
+            <p class="text-sm text-base-content/70">Última actualización: 29/12/2025</p>
           </div>
           <button class="btn btn-ghost btn-sm" type="button" on:click={closePolicy}>
             Cerrar
@@ -91,20 +91,20 @@
 
         <div class="space-y-3 text-sm text-base-content/80">
           <p>
-            En Gas Price Finder utilizamos cookies analiticas para entender el uso
-            de la aplicacion y mejorar la experiencia. Puedes aceptar o rechazar
+            En Gas Price Finder utilizamos cookies analíticas para entender el uso
+            de la aplicación y mejorar la experiencia. Puedes aceptar o rechazar
             estas cookies desde el aviso que aparece al entrar.
           </p>
 
           <div>
-            <p class="font-semibold">Cookies analiticas</p>
+            <p class="font-semibold">Cookies analíticas</p>
             <ul class="list-disc pl-5">
               <li>Proveedor: Google Analytics (Google LLC).</li>
               <li>
-                Finalidad: medir el uso de la aplicacion (busquedas por prefijo
+                Finalidad: medir el uso de la aplicación (búsquedas por prefijo
                 postal y tipo de combustible), sin almacenar datos personales directos.
               </li>
-              <li>Duracion: segun configuracion de Google Analytics.</li>
+              <li>Duración: según configuración de Google Analytics.</li>
             </ul>
           </div>
 

@@ -242,7 +242,7 @@ export const fuelSearch = (() => {
     if (!postalCodePattern.test(trimmedPostalCode)) {
       update((current) => ({
         ...current,
-        favoriteError: "Codigo postal invalido.",
+        favoriteError: "Código postal inválido.",
       }));
       return;
     }
@@ -316,7 +316,7 @@ export const fuelSearch = (() => {
     if (!postalCodePattern.test(trimmedPostalCode)) {
       update((current) => ({
         ...current,
-        errorMessage: "Codigo postal invalido.",
+        errorMessage: "Código postal inválido.",
         response: { status: "ready", result: null },
       }));
       return;
@@ -362,7 +362,7 @@ export const fuelSearch = (() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       update((state) => ({
         ...state,
-        locationError: "La geolocalizacion no esta disponible en este navegador.",
+        locationError: "La geolocalización no está disponible en este navegador.",
       }));
       return;
     }
@@ -386,7 +386,7 @@ export const fuelSearch = (() => {
           });
 
           if (!postalCode) {
-            throw new Error("No se ha encontrado un codigo postal valido.");
+            throw new Error("No se ha encontrado un código postal válido.");
           }
 
           setPostalCode(postalCode);
@@ -396,14 +396,14 @@ export const fuelSearch = (() => {
             ...state,
             isLocating: false,
             locationError: null,
-            detectedPostalCodeMessage: `Codigo postal detectado: ${postalCode}`,
+            detectedPostalCodeMessage: `Código postal detectado: ${postalCode}`,
           }));
         } catch {
           update((state) => ({
             ...state,
             isLocating: false,
             locationError:
-              "No se ha podido obtener el codigo postal desde la ubicacion.",
+              "No se ha podido obtener el código postal desde la ubicación.",
           }));
         } finally {
           clearTimeout(timeout);
@@ -413,10 +413,10 @@ export const fuelSearch = (() => {
         clearTimeout(timeout);
         const message =
           error.code === error.PERMISSION_DENIED
-            ? "Permiso de ubicacion denegado."
+            ? "Permiso de ubicación denegado."
             : error.code === error.TIMEOUT
-              ? "Tiempo de espera agotado al obtener la ubicacion."
-              : "No se ha podido acceder a la ubicacion.";
+              ? "Tiempo de espera agotado al obtener la ubicación."
+              : "No se ha podido acceder a la ubicación.";
 
         update((state) => ({
           ...state,
@@ -438,7 +438,7 @@ export const fuelSearch = (() => {
     if (!query) {
       update((current) => ({
         ...current,
-        locationQueryError: "Escribe una ciudad, zona o direccion.",
+        locationQueryError: "Escribe una ciudad, zona o dirección.",
       }));
       return;
     }
@@ -459,7 +459,7 @@ export const fuelSearch = (() => {
       });
 
       if (!postalCode) {
-        throw new Error("No se ha encontrado un codigo postal valido.");
+        throw new Error("No se ha encontrado un código postal válido.");
       }
 
       setPostalCode(postalCode);
@@ -469,14 +469,14 @@ export const fuelSearch = (() => {
         ...current,
         isSearchingLocationQuery: false,
         locationQueryError: null,
-        detectedPostalCodeMessage: `Codigo postal detectado: ${postalCode}`,
+        detectedPostalCodeMessage: `Código postal detectado: ${postalCode}`,
       }));
     } catch {
       update((current) => ({
         ...current,
         isSearchingLocationQuery: false,
         locationQueryError:
-          "No se ha encontrado un codigo postal. Prueba con una direccion mas concreta.",
+          "No se ha encontrado un código postal. Prueba con una dirección más concreta.",
       }));
     } finally {
       clearTimeout(timeout);

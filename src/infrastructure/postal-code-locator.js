@@ -21,7 +21,7 @@ export const fetchPostalCodeFromCoordinates = async ({
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo obtener la direccion.");
+    throw new Error("No se pudo obtener la dirección.");
   }
 
   const payload = await response.json();
@@ -44,7 +44,7 @@ export const fetchPostalCodeFromLocationQuery = async ({ query, signal }) => {
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo buscar la ubicacion.");
+    throw new Error("No se pudo buscar la ubicación.");
   }
 
   const payload = await response.json();
