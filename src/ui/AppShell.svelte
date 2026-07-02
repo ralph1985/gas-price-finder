@@ -199,17 +199,7 @@
             {/if}
 
             <label class="form-control gap-2">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-sm font-medium">Codigo postal</span>
-                <button
-                  class="btn btn-ghost btn-xs"
-                  type="button"
-                  disabled={$fuelSearch.isLocating}
-                  on:click={fuelSearch.locatePostalCode}
-                >
-                  {$fuelSearch.isLocating ? "Localizando..." : "Usar ubicacion"}
-                </button>
-              </div>
+              <span class="text-sm font-medium">Codigo postal</span>
               <input
                 type="text"
                 id="postal-code"
@@ -247,6 +237,70 @@
               <p class="mt-2 text-xs gpf-muted">
                 El codigo postal debe tener 5 digitos.
               </p>
+            </div>
+
+            <div class="space-y-3 rounded-2xl border border-base-200 bg-base-200/40 p-3">
+              <div>
+                <p class="text-xs uppercase tracking-[0.2em] gpf-muted">
+                  No se mi codigo postal
+                </p>
+                <p class="mt-2 text-xs gpf-muted">
+                  Usa tu ubicacion o escribe una ciudad, zona o direccion.
+                </p>
+              </div>
+              <button
+                class="btn btn-outline w-full"
+                type="button"
+                disabled={$fuelSearch.isLocating}
+                on:click={fuelSearch.locatePostalCode}
+              >
+                {$fuelSearch.isLocating ? "Buscando codigo postal..." : "Usar mi ubicacion"}
+              </button>
+              <label class="form-control gap-2">
+                <span class="text-sm font-medium">Ciudad, zona o direccion</span>
+                <input
+                  type="text"
+                  id="location-query"
+                  placeholder="Valencia centro"
+                  autocomplete="street-address"
+                  aria-describedby="location-query-help"
+                  class="input input-bordered w-full"
+                  value={$fuelSearch.locationQuery}
+                  on:input={(event) => {
+                    fuelSearch.setLocationQuery(event.target.value);
+                  }}
+                  on:keydown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      fuelSearch.findPostalCodeByLocationQuery();
+                    }
+                  }}
+                />
+              </label>
+              <p id="location-query-help" class="text-xs gpf-muted">
+                Cuanto mas concreta sea la direccion, mas probable es detectar un codigo postal.
+              </p>
+              <button
+                class="btn btn-outline w-full"
+                type="button"
+                disabled={$fuelSearch.isSearchingLocationQuery}
+                on:click={fuelSearch.findPostalCodeByLocationQuery}
+              >
+                {$fuelSearch.isSearchingLocationQuery ? "Buscando codigo postal..." : "Buscar por ubicacion"}
+              </button>
+              {#if $fuelSearch.locationQueryError}
+                <div class="alert alert-warning" role="alert">
+                  <span>{$fuelSearch.locationQueryError}</span>
+                  <button
+                    class="btn btn-ghost btn-xs"
+                    type="button"
+                    aria-label="Cerrar aviso"
+                    on:click={fuelSearch.clearLocationQueryError}
+                  >
+                    ✕
+                  </button>
+                </div>
+              {/if}
             </div>
 
             <fieldset class="space-y-2">
