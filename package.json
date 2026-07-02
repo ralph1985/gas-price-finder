@@ -13,12 +13,12 @@
     "@sveltejs/vite-plugin-svelte": "6.2.1",
     "autoprefixer": "10.4.19",
     "daisyui": "4.12.14",
-    "postcss": "8.4.38",
-    "svelte": "5.43.8",
+    "postcss": "8.5.16",
+    "svelte": "5.56.4",
     "tailwindcss": "3.4.17",
-    "vite": "7.2.4"
+    "vite": "7.3.6"
   },
   "dependencies": {
-    "undici": "6.21.0"
+    "undici": "6.27.0"
   }
 }
