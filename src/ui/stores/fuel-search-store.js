@@ -1,8 +1,10 @@
 import { get, writable } from "svelte/store";
 
+import {
+  listFuelPricesBatchUseCase,
+  locatePostalCodeUseCase,
+} from "../../application/usecases.js";
 import { fuelLabelById, fuelProductIds } from "../../infrastructure/fuel-catalog.js";
-import { listFuelPricesBatchUseCase } from "../../usecases/list-fuel-prices.js";
-import { locatePostalCodeUseCase } from "../../usecases/locate-postal-code.js";
 import {
   normalizePostalCode,
   postalCodePattern,
