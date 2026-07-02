@@ -5,6 +5,7 @@
 Proyecto Svelte + Vite (SPA) con API serverless minima en Vercel y enfoque de Arquitectura Limpia. Mantiene dependencias hacia dentro:
 
 - `src/domain/` entidades y reglas de negocio puras (sin framework).
+- `src/application/` composition root y ensamblaje de casos de uso con implementaciones concretas.
 - `src/usecases/` casos de uso que orquestan el dominio.
 - `src/interfaces/` contratos y adaptadores (mappers, DTOs, ports).
 - `src/infrastructure/` detalles tecnicos (fetch, cache, storage).

@@ -1,5 +1,4 @@
 import { FuelPriceSearchStatus } from "../interfaces/fuel-price-repository.js";
-import { FuelPriceRepositoryImpl } from "../infrastructure/fuel-price-repository.js";
 
 function mergeBoundingBoxes(results) {
   if (results.length === 0) return null;
@@ -87,7 +86,3 @@ export function createFuelPriceUsecases(repository) {
 
   return { listFuelPricesUseCase, listFuelPricesBatchUseCase };
 }
-
-const repository = new FuelPriceRepositoryImpl();
-export const { listFuelPricesUseCase, listFuelPricesBatchUseCase } =
-  createFuelPriceUsecases(repository);
