@@ -2,42 +2,42 @@
 
 ## Project Structure & Module Organization
 
-Proyecto Svelte + Vite (SPA) con API serverless minima en Vercel y enfoque de Arquitectura Limpia. Mantiene dependencias hacia dentro:
+Proyecto Svelte + Vite (SPA) con API serverless mínima en Vercel y enfoque de Arquitectura Limpia. Mantiene dependencias hacia dentro:
 
 - `src/domain/` entidades y reglas de negocio puras (sin framework).
 - `src/application/` composition root y ensamblaje de casos de uso con implementaciones concretas.
 - `src/usecases/` casos de uso que orquestan el dominio.
 - `src/interfaces/` contratos y adaptadores (mappers, DTOs, ports).
-- `src/infrastructure/` detalles tecnicos (fetch, cache, storage).
+- `src/infrastructure/` detalles técnicos (fetch, cache, storage).
 - `src/ui/` componentes Svelte, stores de UI y estilos.
-- `api/` funciones serverless de Vercel usadas como proxy tecnico cuando el navegador no puede llamar al upstream directamente.
-- `public/` assets estaticos servidos tal cual.
+- `api/` funciones serverless de Vercel usadas como proxy técnico cuando el navegador no puede llamar al upstream directamente.
+- `public/` assets estáticos servidos tal cual.
 - `index.html` punto de entrada de la SPA.
 
-Si introduces nuevas carpetas (e.g. `src/services/`, `src/stores/`), documenta brevemente el proposito.
+Si introduces nuevas carpetas (e.g. `src/services/`, `src/stores/`), documenta brevemente el propósito.
 
 ## Rendering Strategy (SPA + Serverless API)
 
-La aplicacion se renderiza en cliente como SPA; evita SSR. Las consultas de precios pasan por `/api/fuel-prices`, una funcion serverless de Vercel que actua como proxy tecnico hacia el upstream del Geoportal, incluyendo el manejo TLS/FNMT y cache compartida.
+La aplicación se renderiza en cliente como SPA; evita SSR. Las consultas de precios pasan por `/api/fuel-prices`, una función serverless de Vercel que actúa como proxy técnico hacia el upstream del Geoportal, incluyendo el manejo TLS/FNMT y caché compartida.
 
 Mantener el consumo de CPU en Vercel bajo:
 
-- No introduzcas SSR ni renderizado dinamico de paginas.
-- No anadas nuevas funciones serverless salvo que haya una razon tecnica clara (CORS, TLS, secretos o normalizacion imprescindible).
+- No introduzcas SSR ni renderizado dinámico de páginas.
+- No añadas nuevas funciones serverless salvo que haya una razón técnica clara (CORS, TLS, secretos o normalización imprescindible).
 - Cachea en cliente con `localStorage` cuando aplique.
-- Mantén la cache serverless hasta el siguiente reset diario para evitar llamadas repetidas al upstream.
+- Mantén la caché serverless hasta el siguiente reset diario para evitar llamadas repetidas al upstream.
 - La UI debe llamar a casos de uso; los detalles de `/api` y del upstream pertenecen a infraestructura.
 
 ## Build, Test, and Development Commands
 
 - `npm run dev` - servidor de desarrollo Vite.
 - `npm run dev:api` - servidor local para `/api/fuel-prices` en `localhost:8787`.
-- `npm run build` - build de produccion.
+- `npm run build` - build de producción.
 - `npm run preview` - preview del build.
 
 ## Coding Style & Naming Conventions
 
-- Indentacion: 2 espacios.
+- Indentación: 2 espacios.
 - Componentes Svelte en `PascalCase.svelte` dentro de `src/ui/`.
 - Archivos JS en `kebab-case` o `camelCase`, pero se consistente.
 - Al instalar dependencias, usa versiones fijas sin el prefijo `^` en `package.json`.
@@ -46,21 +46,21 @@ Mantener el consumo de CPU en Vercel bajo:
 
 - El dominio no puede depender de Svelte, stores ni API externas.
 - Los casos de uso solo conocen interfaces (ports) y entidades del dominio.
-- La infraestructura implementa interfaces y puede usar `fetch`, `localStorage`, caches o la funcion `/api/fuel-prices`.
-- La UI solo llama a casos de uso; evita logica de negocio en componentes.
+- La infraestructura implementa interfaces y puede usar `fetch`, `localStorage`, caches o la función `/api/fuel-prices`.
+- La UI solo llama a casos de uso; evita lógica de negocio en componentes.
 
 ## Styling & UI
 
 - Tailwind CSS + DaisyUI para el estilo base.
-- Configuracion en `tailwind.config.cjs` y `postcss.config.cjs`.
+- Configuración en `tailwind.config.cjs` y `postcss.config.cjs`.
 - Estilos globales en `src/app.css`.
 
 ## Testing Guidelines
 
-No hay framework de pruebas configurado. Si se anade:
+No hay framework de pruebas configurado. Si se añade:
 
 - Nombra los tests con `.spec` y documenta el comando en `package.json`.
-- Manten los tests cerca de `src/` o en `tests/`.
+- Mantén los tests cerca de `src/` o en `tests/`.
 
 ## Commit & Pull Request Guidelines
 
@@ -71,7 +71,7 @@ Si el usuario pide varias cosas diferentes, separa los cambios en commits distin
 
 No subas `.env`. Documenta variables de entorno en `README.md` si aparecen.
 
-## Gestion de tareas y horas
+## Gestión de tareas y horas
 
 - Al empezar, identifica el `projectId` en `../../dashboard/data/projects.json`.
 - Busca si ya existe una tarea "En curso" en `../../dashboard/data/projects-tasks.json` para ese `projectId`.

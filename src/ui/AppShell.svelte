@@ -125,7 +125,7 @@
           </button>
         </div>
         <p class="text-sm gpf-muted">
-          Consulta precios actualizados por codigo postal.
+          Consulta precios actualizados por código postal.
         </p>
       </div>
     </header>
@@ -135,9 +135,9 @@
         <div class="card-body gap-4">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <h2 class="text-lg font-semibold">Busqueda rapida</h2>
+              <h2 class="text-lg font-semibold">Búsqueda rápida</h2>
               <p class="text-xs gpf-muted">
-                Rellena el codigo postal y elige uno o varios combustibles.
+                Rellena el código postal y elige uno o varios combustibles.
               </p>
             </div>
             <button
@@ -163,7 +163,7 @@
             </p>
             <div class="mt-2 flex flex-wrap gap-2 text-xs">
               <span class="badge badge-outline">
-                CP: {$fuelSearch.postalCode || "Sin codigo"}
+                CP: {$fuelSearch.postalCode || "Sin código"}
               </span>
               <span class="badge badge-outline">{selectedFuelLabel}</span>
             </div>
@@ -203,7 +203,7 @@
             {/if}
 
             <label class="form-control gap-2">
-              <span class="text-sm font-medium">Codigo postal</span>
+              <span class="text-sm font-medium">Código postal</span>
               <input
                 type="text"
                 id="postal-code"
@@ -218,7 +218,7 @@
                 }}
               />
               <span id="postal-help" class="text-xs gpf-muted">
-                5 digitos. Si no lo sabes, usa las opciones de ubicacion.
+                5 dígitos. Si no lo sabes, usa las opciones de ubicación.
               </span>
             </label>
             {#if $fuelSearch.detectedPostalCodeMessage}
@@ -242,11 +242,11 @@
 
             <details class="collapse collapse-arrow border border-base-200 bg-base-200/40">
               <summary class="collapse-title text-sm font-medium">
-                No se mi codigo postal
+                No se mi código postal
               </summary>
               <div class="collapse-content space-y-3">
                 <p class="text-xs gpf-muted">
-                  Usa tu ubicacion o escribe una ciudad, zona o direccion.
+                  Usa tu ubicación o escribe una ciudad, zona o dirección.
                 </p>
                 <button
                   class="btn btn-outline w-full"
@@ -254,10 +254,10 @@
                   disabled={$fuelSearch.isLocating}
                   on:click={fuelSearch.locatePostalCode}
                 >
-                  {$fuelSearch.isLocating ? "Buscando codigo postal..." : "Usar mi ubicacion"}
+                  {$fuelSearch.isLocating ? "Buscando código postal..." : "Usar mi ubicación"}
                 </button>
                 <label class="form-control gap-2">
-                  <span class="text-sm font-medium">Ciudad, zona o direccion</span>
+                  <span class="text-sm font-medium">Ciudad, zona o dirección</span>
                   <input
                     type="text"
                     id="location-query"
@@ -278,7 +278,7 @@
                   />
                 </label>
                 <p id="location-query-help" class="text-xs gpf-muted">
-                  Cuanto mas concreta sea la direccion, mas probable es detectar un codigo postal.
+                  Cuanto más concreta sea la dirección, más probable es detectar un código postal.
                 </p>
                 <button
                   class="btn btn-outline w-full"
@@ -286,7 +286,7 @@
                   disabled={$fuelSearch.isSearchingLocationQuery}
                   on:click={fuelSearch.findPostalCodeByLocationQuery}
                 >
-                  {$fuelSearch.isSearchingLocationQuery ? "Buscando codigo postal..." : "Buscar por ubicacion"}
+                  {$fuelSearch.isSearchingLocationQuery ? "Buscando código postal..." : "Buscar por ubicación"}
                 </button>
                 {#if $fuelSearch.locationQueryError}
                   <div class="alert alert-warning" role="alert">
@@ -354,15 +354,15 @@
             <thead>
               <tr>
                 <th>Combustible</th>
-                <th class="text-right">Minimo</th>
+                <th class="text-right">Mínimo</th>
                 <th class="text-right">Promedio</th>
-                <th class="text-right">Maximo</th>
+                <th class="text-right">Máximo</th>
               </tr>
             </thead>
             <tbody>
               {#if priceStatsByFuel.length === 0}
                 <tr>
-                  <td class="gpf-muted" colspan="4">Sin precios para calcular estadisticas.</td>
+                  <td class="gpf-muted" colspan="4">Sin precios para calcular estadísticas.</td>
                 </tr>
               {:else}
                 {#each priceStatsByFuel as fuelStats}
@@ -409,7 +409,7 @@
           </div>
         {:else if $fuelSearch.response.status === "ready" && formattedStations.length === 0}
           <div class="alert alert-info" role="status">
-            <span>No hay resultados todavia.</span>
+            <span>No hay resultados todavía.</span>
           </div>
         {/if}
 
@@ -470,7 +470,7 @@
             <div>
               <div class="text-lg font-semibold">Guardar favorito</div>
               <p class="text-sm gpf-muted">
-                Guarda el codigo postal y la seleccion actual de combustibles.
+                Guarda el código postal y la selección actual de combustibles.
               </p>
             </div>
             <button class="btn btn-ghost btn-sm" type="button" on:click={fuelSearch.closeFavoriteModal}>
