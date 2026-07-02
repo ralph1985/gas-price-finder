@@ -33,6 +33,7 @@ const initialState = {
   locationQuery: "",
   isSearchingLocationQuery: false,
   locationQueryError: null,
+  detectedPostalCodeMessage: null,
 };
 
 const canUseStorage = () => typeof localStorage !== "undefined";
@@ -172,7 +173,11 @@ export const fuelSearch = (() => {
   const setPostalCode = (value) => {
     const normalized = normalizePostalCode(value);
     update((state) => {
-      const nextState = { ...state, postalCode: normalized };
+      const nextState = {
+        ...state,
+        postalCode: normalized,
+        detectedPostalCodeMessage: null,
+      };
       if (state.hasHydrated && postalCodePattern.test(normalized)) {
         persistPostalCode(normalized);
       }
@@ -298,6 +303,9 @@ export const fuelSearch = (() => {
       selectedProductIds: defaultProductIds,
       response: { status: "ready", result: null },
       errorMessage: null,
+      locationError: null,
+      locationQueryError: null,
+      detectedPostalCodeMessage: null,
     }));
   };
 
@@ -388,6 +396,7 @@ export const fuelSearch = (() => {
             ...state,
             isLocating: false,
             locationError: null,
+            detectedPostalCodeMessage: `Codigo postal detectado: ${postalCode}`,
           }));
         } catch {
           update((state) => ({
@@ -460,6 +469,7 @@ export const fuelSearch = (() => {
         ...current,
         isSearchingLocationQuery: false,
         locationQueryError: null,
+        detectedPostalCodeMessage: `Codigo postal detectado: ${postalCode}`,
       }));
     } catch {
       update((current) => ({
