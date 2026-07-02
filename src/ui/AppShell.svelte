@@ -9,7 +9,7 @@
   import { fuelSearch } from "./stores/fuel-search-store.js";
   import {
     buildFormattedStations,
-    calculatePriceStats,
+    calculatePriceStatsByFuel,
   } from "./utils/fuel-format.js";
   import CookieConsent from "./components/CookieConsent.svelte";
 
@@ -27,7 +27,11 @@
     fuelLabelById,
     fuelBadgeClassById,
   });
-  $: priceStats = calculatePriceStats(stations);
+  $: priceStatsByFuel = calculatePriceStatsByFuel(stations, {
+    fuelLabelById,
+    fuelBadgeClassById,
+    selectedProductIds: $fuelSearch.selectedProductIds,
+  });
   $: selectedFuelLabels = $fuelSearch.selectedProductIds
     .map((productId) => fuelLabelById.get(productId))
     .filter(Boolean);
@@ -348,25 +352,43 @@
           Estaciones: <span class="font-semibold">{formattedStations.length}</span>
         </div>
         <p class="text-xs gpf-muted">Ordenados por el más barato.</p>
-        <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
-          <div class="stat">
-            <div class="stat-title gpf-muted">Minimo</div>
-            <div class="stat-value text-primary">
-              {priceStats.min != null ? priceStats.min.toFixed(3) : "--"}
-            </div>
-          </div>
-          <div class="stat">
-            <div class="stat-title gpf-muted">Promedio</div>
-            <div class="stat-value">
-              {priceStats.avg != null ? priceStats.avg.toFixed(3) : "--"}
-            </div>
-          </div>
-          <div class="stat">
-            <div class="stat-title gpf-muted">Maximo</div>
-            <div class="stat-value text-secondary">
-              {priceStats.max != null ? priceStats.max.toFixed(3) : "--"}
-            </div>
-          </div>
+        <div class="overflow-x-auto rounded-box border border-base-200 bg-base-100 shadow">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Combustible</th>
+                <th class="text-right">Minimo</th>
+                <th class="text-right">Promedio</th>
+                <th class="text-right">Maximo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#if priceStatsByFuel.length === 0}
+                <tr>
+                  <td class="gpf-muted" colspan="4">Sin precios para calcular estadisticas.</td>
+                </tr>
+              {:else}
+                {#each priceStatsByFuel as fuelStats}
+                  <tr>
+                    <td>
+                      <span class={`badge ${fuelStats.fuelBadgeClass}`}>
+                        {fuelStats.fuelLabel}
+                      </span>
+                    </td>
+                    <td class="text-right">
+                      {fuelStats.min != null ? fuelStats.min.toFixed(3) : "--"}
+                    </td>
+                    <td class="text-right">
+                      {fuelStats.avg != null ? fuelStats.avg.toFixed(3) : "--"}
+                    </td>
+                    <td class="text-right">
+                      {fuelStats.max != null ? fuelStats.max.toFixed(3) : "--"}
+                    </td>
+                  </tr>
+                {/each}
+              {/if}
+            </tbody>
+          </table>
         </div>
 
         {#if $fuelSearch.isLoading}

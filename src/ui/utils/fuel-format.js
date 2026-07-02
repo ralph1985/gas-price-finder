@@ -87,17 +87,38 @@ export const buildFormattedStations = (stations, { fuelLabelById, fuelBadgeClass
     .sort((a, b) => a.minPrice - b.minPrice);
 };
 
-export const calculatePriceStats = (items) => {
-  const values = items
-    .map((station) => station.precio)
-    .filter((value) => typeof value === "number");
-  if (values.length === 0) {
-    return { min: null, avg: null, max: null };
-  }
+const calculateStats = (values) => {
+  if (values.length === 0) return { min: null, avg: null, max: null };
 
   const min = Math.min(...values);
   const max = Math.max(...values);
   const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
 
   return { min, avg, max };
+};
+
+export const calculatePriceStatsByFuel = (
+  items,
+  { fuelLabelById, fuelBadgeClassById, selectedProductIds = [] }
+) => {
+  const valuesByFuel = new Map();
+
+  items.forEach((station) => {
+    if (!station.fuelId || typeof station.precio !== "number") return;
+    const values = valuesByFuel.get(station.fuelId) ?? [];
+    values.push(station.precio);
+    valuesByFuel.set(station.fuelId, values);
+  });
+
+  const orderedFuelIds = [
+    ...selectedProductIds.filter((fuelId) => valuesByFuel.has(fuelId)),
+    ...[...valuesByFuel.keys()].filter((fuelId) => !selectedProductIds.includes(fuelId)),
+  ];
+
+  return orderedFuelIds.map((fuelId) => ({
+    fuelId,
+    fuelLabel: fuelLabelById.get(fuelId) ?? "Combustible",
+    fuelBadgeClass: fuelBadgeClassById[fuelId] ?? "badge-outline",
+    ...calculateStats(valuesByFuel.get(fuelId) ?? []),
+  }));
 };
