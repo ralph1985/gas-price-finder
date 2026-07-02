@@ -1,6 +1,7 @@
 import { get, writable } from "svelte/store";
 
 import {
+  findPostalCodeByLocationQueryUseCase,
   listFuelPricesBatchUseCase,
   locatePostalCodeUseCase,
 } from "../../application/usecases.js";
@@ -29,6 +30,9 @@ const initialState = {
   hasHydrated: false,
   isLocating: false,
   locationError: null,
+  locationQuery: "",
+  isSearchingLocationQuery: false,
+  locationQueryError: null,
 };
 
 const canUseStorage = () => typeof localStorage !== "undefined";
@@ -174,6 +178,14 @@ export const fuelSearch = (() => {
       }
       return nextState;
     });
+  };
+
+  const setLocationQuery = (value) => {
+    update((state) => ({
+      ...state,
+      locationQuery: value,
+      locationQueryError: null,
+    }));
   };
 
   const toggleSelectedProductId = (value) => {
@@ -370,6 +382,7 @@ export const fuelSearch = (() => {
           }
 
           setPostalCode(postalCode);
+          persistPostalCode(postalCode);
           await search();
           update((state) => ({
             ...state,
@@ -410,14 +423,69 @@ export const fuelSearch = (() => {
     );
   };
 
+  const findPostalCodeByLocationQuery = async () => {
+    const state = get(store);
+    const query = state.locationQuery.trim();
+    if (!query) {
+      update((current) => ({
+        ...current,
+        locationQueryError: "Escribe una ciudad, zona o direccion.",
+      }));
+      return;
+    }
+
+    update((current) => ({
+      ...current,
+      isSearchingLocationQuery: true,
+      locationQueryError: null,
+    }));
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const postalCode = await findPostalCodeByLocationQueryUseCase({
+        query,
+        signal: controller.signal,
+      });
+
+      if (!postalCode) {
+        throw new Error("No se ha encontrado un codigo postal valido.");
+      }
+
+      setPostalCode(postalCode);
+      persistPostalCode(postalCode);
+      await search();
+      update((current) => ({
+        ...current,
+        isSearchingLocationQuery: false,
+        locationQueryError: null,
+      }));
+    } catch {
+      update((current) => ({
+        ...current,
+        isSearchingLocationQuery: false,
+        locationQueryError:
+          "No se ha encontrado un codigo postal. Prueba con una direccion mas concreta.",
+      }));
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
   const clearLocationError = () => {
     update((state) => ({ ...state, locationError: null }));
+  };
+
+  const clearLocationQueryError = () => {
+    update((state) => ({ ...state, locationQueryError: null }));
   };
 
   return {
     subscribe,
     init,
     setPostalCode,
+    setLocationQuery,
     toggleSelectedProductId,
     openFavoriteModal,
     closeFavoriteModal,
@@ -428,6 +496,8 @@ export const fuelSearch = (() => {
     clear,
     search,
     locatePostalCode,
+    findPostalCodeByLocationQuery,
     clearLocationError,
+    clearLocationQueryError,
   };
 })();
