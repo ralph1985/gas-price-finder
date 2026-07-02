@@ -39,6 +39,9 @@
     selectedFuelLabels.length > 0
       ? selectedFuelLabels.join(", ")
       : "Sin combustible";
+  $: canSaveFavorite =
+    /^\d{5}$/.test($fuelSearch.postalCode) &&
+    $fuelSearch.selectedProductIds.length > 0;
   $: {
     if (wasLoading && !$fuelSearch.isLoading) {
       isSearchCollapsed = true;
@@ -180,7 +183,7 @@
                 </p>
                 <div class="flex flex-wrap gap-2">
                   {#each $fuelSearch.favorites as favorite}
-                    <div class="flex items-center gap-2 rounded-full border border-base-200 px-3 py-1">
+                    <div class="flex flex-wrap items-center gap-2 rounded-xl border border-base-200 px-3 py-2">
                       <button
                         class="text-xs font-semibold"
                         type="button"
@@ -188,6 +191,13 @@
                       >
                         {favorite.name} - {favorite.postalCode}
                       </button>
+                      <div class="flex flex-wrap gap-1">
+                        {#each favorite.productIds as productId}
+                          <span class={`badge badge-xs ${fuelBadgeClassById[productId] ?? "badge-outline"}`}>
+                            {fuelLabelById.get(productId) ?? "Combustible"}
+                          </span>
+                        {/each}
+                      </div>
                       <button
                         class="text-xs gpf-muted"
                         type="button"
@@ -226,6 +236,11 @@
                 <span>{$fuelSearch.detectedPostalCodeMessage}</span>
               </div>
             {/if}
+            {#if $fuelSearch.favoriteSuccessMessage}
+              <div class="alert alert-success py-2" role="status">
+                <span>{$fuelSearch.favoriteSuccessMessage}</span>
+              </div>
+            {/if}
             {#if $fuelSearch.locationError}
               <div class="alert alert-warning" role="alert">
                 <span>{$fuelSearch.locationError}</span>
@@ -242,7 +257,7 @@
 
             <details class="collapse collapse-arrow border border-base-200 bg-base-200/40">
               <summary class="collapse-title text-sm font-medium">
-                No se mi código postal
+                No sé mi código postal
               </summary>
               <div class="collapse-content space-y-3">
                 <p class="text-xs gpf-muted">
@@ -335,9 +350,10 @@
             <button
               class="btn btn-outline w-full"
               type="button"
+              disabled={!canSaveFavorite}
               on:click={fuelSearch.openFavoriteModal}
             >
-              Guardar
+              Guardar búsqueda
             </button>
           </div>
 
@@ -468,7 +484,7 @@
         <div class="card-body gap-4">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <div class="text-lg font-semibold">Guardar favorito</div>
+              <div class="text-lg font-semibold">Guardar búsqueda</div>
               <p class="text-sm gpf-muted">
                 Guarda el código postal y la selección actual de combustibles.
               </p>
@@ -501,7 +517,7 @@
               Cancelar
             </button>
             <button class="btn btn-primary btn-sm" type="button" on:click={fuelSearch.saveFavorite}>
-              Guardar
+              Guardar búsqueda
             </button>
           </div>
         </div>
