@@ -7,8 +7,6 @@ const { listFuelPricesUseCase } = createFuelPriceUsecases(repository);
 
 export default async function handler(request, response) {
   const requestId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-  const contentLength = request.headers["content-length"];
-  const contentType = request.headers["content-type"];
   if (request.method !== "POST") {
     response.status(405).json({ error: "Method not allowed" });
     return;
