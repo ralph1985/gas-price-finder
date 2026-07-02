@@ -291,7 +291,7 @@
 
       <div class="space-y-4" aria-busy={$fuelSearch.isLoading}>
         <div class="text-sm gpf-muted" aria-live="polite">
-          Resultados: <span class="font-semibold">{stations.length}</span>
+          Estaciones: <span class="font-semibold">{formattedStations.length}</span>
         </div>
         <p class="text-xs gpf-muted">Ordenados por el más barato.</p>
         <div class="stats stats-horizontal border border-base-200 bg-base-100 shadow">
@@ -360,14 +360,20 @@
                       <p class="text-sm gpf-muted">{station.address}</p>
                     {/if}
                   </div>
-                  {#if station.fuelLabel}
-                    <span class={`badge ${station.fuelBadgeClass ?? "badge-outline"}`}>
-                      {station.fuelLabel}
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-sm">
+                  {#each station.prices as priceItem}
+                    <span class="badge gap-2 border-base-300 py-3">
+                      {#if priceItem.fuelLabel}
+                        <span class={`badge badge-sm ${priceItem.fuelBadgeClass ?? "badge-outline"}`}>
+                          {priceItem.fuelLabel}
+                        </span>
+                      {/if}
+                      <span>{priceItem.price}</span>
                     </span>
-                  {/if}
+                  {/each}
                 </div>
                 <div class="flex flex-wrap items-center gap-3 text-sm">
-                  <span class="badge badge-neutral">{station.price}</span>
                   {#if station.update}
                     <span class="gpf-muted">{station.update}</span>
                   {/if}
