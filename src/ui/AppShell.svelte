@@ -28,9 +28,13 @@
     fuelBadgeClassById,
   });
   $: priceStats = calculatePriceStats(stations);
-  $: selectedFuelLabel = $fuelSearch.selectedProductId
-    ? fuelLabelById[$fuelSearch.selectedProductId] ?? "Combustible"
-    : "Sin combustible";
+  $: selectedFuelLabels = $fuelSearch.selectedProductIds
+    .map((productId) => fuelLabelById.get(productId))
+    .filter(Boolean);
+  $: selectedFuelLabel =
+    selectedFuelLabels.length > 0
+      ? selectedFuelLabels.join(", ")
+      : "Sin combustible";
   $: {
     if (wasLoading && !$fuelSearch.isLoading) {
       isSearchCollapsed = true;
@@ -129,7 +133,7 @@
             <div>
               <h2 class="text-lg font-semibold">Busqueda rapida</h2>
               <p class="text-xs gpf-muted">
-                Rellena el codigo postal y elige combustible.
+                Rellena el codigo postal y elige uno o varios combustibles.
               </p>
             </div>
             <button
@@ -250,11 +254,11 @@
               {#each fuelProductCatalog as option}
                 <label class="flex items-center gap-3">
                   <input
-                    type="radio"
+                    type="checkbox"
                     name="fuel-product"
-                    class="radio radio-sm"
-                    checked={$fuelSearch.selectedProductId === option.id}
-                    on:change={() => fuelSearch.setSelectedProductId(option.id)}
+                    class="checkbox checkbox-sm"
+                    checked={$fuelSearch.selectedProductIds.includes(option.id)}
+                    on:change={() => fuelSearch.toggleSelectedProductId(option.id)}
                   />
                   <span>{option.label}</span>
                 </label>

@@ -14,10 +14,11 @@ const fuelSelectionStorageKey = "gpf:fuelSelection";
 const lastPostalCodeStorageKey = "gpf:lastPostalCode";
 const fuelFavoritesStorageKey = "gpf:fuelFavorites";
 const defaultProductId = fuelProductIds.includes("4") ? "4" : fuelProductIds[0];
+const defaultProductIds = [defaultProductId];
 
 const initialState = {
   postalCode: "",
-  selectedProductId: defaultProductId,
+  selectedProductIds: defaultProductIds,
   response: { status: "ready", result: null },
   isLoading: false,
   errorMessage: null,
@@ -33,28 +34,40 @@ const initialState = {
 const canUseStorage = () => typeof localStorage !== "undefined";
 const getPostalPrefix = (postalCode) => postalCode.slice(0, 2);
 
-const trackSearchEvent = ({ postalCode, productId, resultCount }) => {
+const sanitizeProductIds = (values) => {
+  const productIds = Array.isArray(values) ? values : [values];
+  return productIds.filter(
+    (value, index) =>
+      typeof value === "string" &&
+      fuelProductIds.includes(value) &&
+      productIds.indexOf(value) === index
+  );
+};
+
+const trackSearchEvent = ({ postalCode, productIds, resultCount }) => {
   if (typeof window === "undefined") return;
   if (typeof window.gtag !== "function") return;
   if (!postalCodePattern.test(postalCode)) return;
 
   window.gtag("event", "search_postal_code", {
     postal_prefix: getPostalPrefix(postalCode),
-    fuel_id: productId,
-    fuel_label: fuelLabelById.get(productId) ?? null,
+    fuel_ids: productIds,
+    fuel_labels: productIds.map((productId) => fuelLabelById.get(productId)).filter(Boolean),
+    fuel_count: productIds.length,
     results_count: resultCount,
   });
 };
 
-const trackFavoriteEvent = ({ postalCode, productId, nameLength }) => {
+const trackFavoriteEvent = ({ postalCode, productIds, nameLength }) => {
   if (typeof window === "undefined") return;
   if (typeof window.gtag !== "function") return;
   if (!postalCodePattern.test(postalCode)) return;
 
   window.gtag("event", "favorite_saved", {
     postal_prefix: getPostalPrefix(postalCode),
-    fuel_id: productId,
-    fuel_label: fuelLabelById.get(productId) ?? null,
+    fuel_ids: productIds,
+    fuel_labels: productIds.map((productId) => fuelLabelById.get(productId)).filter(Boolean),
+    fuel_count: productIds.length,
     name_length: nameLength,
   });
 };
@@ -63,9 +76,9 @@ export const fuelSearch = (() => {
   const store = writable(initialState);
   const { subscribe, update } = store;
 
-  const persistSelection = (productId) => {
+  const persistSelection = (productIds) => {
     if (!canUseStorage()) return;
-    localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(productId));
+    localStorage.setItem(fuelSelectionStorageKey, JSON.stringify(productIds));
   };
 
   const persistFavorites = (favorites) => {
@@ -84,12 +97,13 @@ export const fuelSearch = (() => {
     if (!stored) return null;
     try {
       const parsed = JSON.parse(stored);
-      if (typeof parsed === "string" && fuelProductIds.includes(parsed)) {
-        return parsed;
+      if (typeof parsed === "string") {
+        const sanitized = sanitizeProductIds(parsed);
+        return sanitized.length > 0 ? sanitized : null;
       }
       if (Array.isArray(parsed)) {
-        const sanitized = parsed.filter((value) => fuelProductIds.includes(value));
-        return sanitized[0] ?? null;
+        const sanitized = sanitizeProductIds(parsed);
+        return sanitized;
       }
       return null;
     } catch {
@@ -114,14 +128,17 @@ export const fuelSearch = (() => {
             typeof value.postalCode === "string"
         )
         .map((value) => {
-          const productIds = Array.isArray(value.productIds)
-            ? value.productIds.filter((id) => fuelProductIds.includes(id))
-            : [];
-          const productId =
-            typeof value.productId === "string" && fuelProductIds.includes(value.productId)
-              ? value.productId
-              : productIds[0] ?? defaultProductId;
-          return { ...value, productId };
+          const productIds = sanitizeProductIds(value.productIds);
+          const legacyProductIds = sanitizeProductIds(value.productId);
+          return {
+            ...value,
+            productIds:
+              productIds.length > 0
+                ? productIds
+                : legacyProductIds.length > 0
+                  ? legacyProductIds
+                  : defaultProductIds,
+          };
         });
     } catch {
       return [];
@@ -140,7 +157,7 @@ export const fuelSearch = (() => {
     update((state) => ({
       ...state,
       postalCode: nextPostalCode,
-      selectedProductId: selection ?? state.selectedProductId,
+      selectedProductIds: selection ?? state.selectedProductIds,
       favorites,
       hasHydrated: true,
     }));
@@ -159,13 +176,16 @@ export const fuelSearch = (() => {
     });
   };
 
-  const setSelectedProductId = (value) => {
+  const toggleSelectedProductId = (value) => {
     if (!fuelProductIds.includes(value)) return;
     update((state) => {
+      const selectedProductIds = state.selectedProductIds.includes(value)
+        ? state.selectedProductIds.filter((productId) => productId !== value)
+        : [...state.selectedProductIds, value];
       if (state.hasHydrated) {
-        persistSelection(value);
+        persistSelection(selectedProductIds);
       }
-      return { ...state, selectedProductId: value };
+      return { ...state, selectedProductIds };
     });
   };
 
@@ -209,6 +229,13 @@ export const fuelSearch = (() => {
       }));
       return;
     }
+    if (state.selectedProductIds.length === 0) {
+      update((current) => ({
+        ...current,
+        favoriteError: "Selecciona al menos un combustible.",
+      }));
+      return;
+    }
 
     const nextFavorites = [
       ...state.favorites,
@@ -216,13 +243,13 @@ export const fuelSearch = (() => {
         id: `${trimmedPostalCode}-${Date.now()}`,
         name: trimmedName,
         postalCode: trimmedPostalCode,
-        productId: state.selectedProductId,
+        productIds: state.selectedProductIds,
       },
     ];
     persistFavorites(nextFavorites);
     trackFavoriteEvent({
       postalCode: trimmedPostalCode,
-      productId: state.selectedProductId,
+      productIds: state.selectedProductIds,
       nameLength: trimmedName.length,
     });
     update((current) => ({
@@ -246,7 +273,8 @@ export const fuelSearch = (() => {
     update((state) => ({
       ...state,
       postalCode: favorite.postalCode,
-      selectedProductId: favorite.productId ?? state.selectedProductId,
+      selectedProductIds:
+        favorite.productIds?.length > 0 ? favorite.productIds : state.selectedProductIds,
     }));
     await search();
   };
@@ -255,7 +283,7 @@ export const fuelSearch = (() => {
     update((state) => ({
       ...state,
       postalCode: "",
-      selectedProductId: defaultProductId,
+      selectedProductIds: defaultProductIds,
       response: { status: "ready", result: null },
       errorMessage: null,
     }));
@@ -273,7 +301,7 @@ export const fuelSearch = (() => {
       }));
       return;
     }
-    if (!state.selectedProductId) {
+    if (state.selectedProductIds.length === 0) {
       update((current) => ({
         ...current,
         errorMessage: "Selecciona al menos un combustible.",
@@ -290,12 +318,12 @@ export const fuelSearch = (() => {
 
     const nextResponse = await listFuelPricesBatchUseCase(
       { postalCode: trimmedPostalCode },
-      [state.selectedProductId]
+      state.selectedProductIds
     );
 
     trackSearchEvent({
       postalCode: trimmedPostalCode,
-      productId: state.selectedProductId,
+      productIds: state.selectedProductIds,
       resultCount: nextResponse?.result?.estaciones?.length ?? 0,
     });
 
@@ -390,7 +418,7 @@ export const fuelSearch = (() => {
     subscribe,
     init,
     setPostalCode,
-    setSelectedProductId,
+    toggleSelectedProductId,
     openFavoriteModal,
     closeFavoriteModal,
     setFavoriteName,
