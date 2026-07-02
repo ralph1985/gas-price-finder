@@ -27,6 +27,7 @@ const initialState = {
   isFavoriteModalOpen: false,
   favoriteName: "",
   favoriteError: null,
+  favoriteSuccessMessage: null,
   hasHydrated: false,
   isLocating: false,
   locationError: null,
@@ -48,6 +49,9 @@ const sanitizeProductIds = (values) => {
       productIds.indexOf(value) === index
   );
 };
+
+const getFavoriteKey = ({ postalCode, productIds }) =>
+  `${postalCode}:${sanitizeProductIds(productIds).sort().join(",")}`;
 
 const trackSearchEvent = ({ postalCode, productIds, resultCount }) => {
   if (typeof window === "undefined") return;
@@ -177,6 +181,7 @@ export const fuelSearch = (() => {
         ...state,
         postalCode: normalized,
         detectedPostalCodeMessage: null,
+        favoriteSuccessMessage: null,
       };
       if (state.hasHydrated && postalCodePattern.test(normalized)) {
         persistPostalCode(normalized);
@@ -202,14 +207,25 @@ export const fuelSearch = (() => {
       if (state.hasHydrated) {
         persistSelection(selectedProductIds);
       }
-      return { ...state, selectedProductIds };
+      return { ...state, selectedProductIds, favoriteSuccessMessage: null };
     });
   };
 
   const openFavoriteModal = () => {
+    const state = get(store);
+    if (!postalCodePattern.test(state.postalCode) || state.selectedProductIds.length === 0) {
+      update((current) => ({
+        ...current,
+        favoriteError: "Busca con un código postal válido antes de guardar.",
+        favoriteSuccessMessage: null,
+      }));
+      return;
+    }
+
     update((state) => ({
       ...state,
       favoriteError: null,
+      favoriteSuccessMessage: null,
       favoriteName: "",
       isFavoriteModalOpen: true,
     }));
@@ -224,7 +240,12 @@ export const fuelSearch = (() => {
   };
 
   const setFavoriteName = (value) => {
-    update((state) => ({ ...state, favoriteName: value }));
+    update((state) => ({
+      ...state,
+      favoriteName: value,
+      favoriteError: null,
+      favoriteSuccessMessage: null,
+    }));
   };
 
   const saveFavorite = () => {
@@ -254,6 +275,22 @@ export const fuelSearch = (() => {
       return;
     }
 
+    const favoriteKey = getFavoriteKey({
+      postalCode: trimmedPostalCode,
+      productIds: state.selectedProductIds,
+    });
+    const hasDuplicate = state.favorites.some(
+      (favorite) => getFavoriteKey(favorite) === favoriteKey
+    );
+    if (hasDuplicate) {
+      update((current) => ({
+        ...current,
+        favoriteError: "Ya tienes guardada esta búsqueda.",
+        favoriteSuccessMessage: null,
+      }));
+      return;
+    }
+
     const nextFavorites = [
       ...state.favorites,
       {
@@ -274,6 +311,7 @@ export const fuelSearch = (() => {
       favorites: nextFavorites,
       favoriteName: "",
       favoriteError: null,
+      favoriteSuccessMessage: "Favorito guardado.",
       isFavoriteModalOpen: false,
     }));
   };
@@ -292,6 +330,7 @@ export const fuelSearch = (() => {
       postalCode: favorite.postalCode,
       selectedProductIds:
         favorite.productIds?.length > 0 ? favorite.productIds : state.selectedProductIds,
+      favoriteSuccessMessage: null,
     }));
     await search();
   };
@@ -303,6 +342,8 @@ export const fuelSearch = (() => {
       selectedProductIds: defaultProductIds,
       response: { status: "ready", result: null },
       errorMessage: null,
+      favoriteError: null,
+      favoriteSuccessMessage: null,
       locationError: null,
       locationQueryError: null,
       detectedPostalCodeMessage: null,
